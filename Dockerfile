@@ -32,15 +32,13 @@ WORKDIR $SERVER_HOME
 RUN mkdir -p universe mods logs config .cache && \
     chown -R hytale:hytale $SERVER_HOME
 
-COPY entrypoint.sh /opt/hytale/entrypoint.sh
-
-# Fix line endings and permissions
-RUN dos2unix /opt/hytale/entrypoint.sh && \
-    chmod +x /opt/hytale/entrypoint.sh && \
-    chown hytale:hytale /opt/hytale/entrypoint.sh
+# Copy entrypoint to /usr/local/bin (not affected by volume mounts)
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN dos2unix /usr/local/bin/entrypoint.sh && \
+    chmod +x /usr/local/bin/entrypoint.sh
 
 USER hytale
 
 EXPOSE 5520/udp
 
-ENTRYPOINT ["/opt/hytale/entrypoint.sh"]
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

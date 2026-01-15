@@ -1,4 +1,4 @@
-name: Build and Push Docker Image
+name: Build and Push Docker Images
 
 on:
   push:
@@ -8,6 +8,7 @@ on:
       - "Dockerfile"
       - "entrypoint.sh"
       - "config.json"
+      - "panel/**"
       - ".github/workflows/docker-publish.yml"
   pull_request:
     branches:
@@ -16,10 +17,9 @@ on:
 
 env:
   REGISTRY: docker.io
-  IMAGE_NAME: ketbom/hytale-server
 
 jobs:
-  build-and-push:
+  build-server:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -55,27 +55,35 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Extract metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=raw,value=${{ steps.config.outputs.version }}
-            type=raw,value=latest,enable={{is_default_branch}}
-          labels: |
-            org.opencontainers.image.title=${{ steps.config.outputs.title }}
-            org.opencontainers.image.description=${{ steps.config.outputs.description }}
-            org.opencontainers.image.version=${{ steps.config.outputs.version }}
-
-      - name: Build and push
+      - name: Build and push server
         uses: docker/build-push-action@v5
         with:
           context: .
           platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: |
+            ketbom/hytale-server:${{ steps.config.outputs.version }}
+            ketbom/hytale-server:latest
+          labels: |
+            org.opencontainers.image.title=${{ steps.config.outputs.title }}
+            org.opencontainers.image.description=${{ steps.config.outputs.description }}
+            org.opencontainers.image.version=${{ steps.config.outputs.version }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push panel
+        uses: docker/build-push-action@v5
+        with:
+          context: ./panel
+          platforms: linux/amd64,linux/arm64
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: |
+            ketbom/hytale-panel:${{ steps.config.outputs.version }}
+            ketbom/hytale-panel:latest
+          labels: |
+            org.opencontainers.image.title=Hytale Panel
+            org.opencontainers.image.description=Web panel for Hytale Server
+            org.opencontainers.image.version=${{ steps.config.outputs.version }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -83,14 +91,8 @@ jobs:
         if: github.event_name != 'pull_request'
         run: |
           VERSION="v${{ steps.config.outputs.version }}"
-
-          # Delete release if exists
           gh release delete "$VERSION" --yes 2>/dev/null || true
-
-          # Delete remote tag if exists
           git push origin --delete "$VERSION" 2>/dev/null || true
-
-          # Delete local tag if exists
           git tag -d "$VERSION" 2>/dev/null || true
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -113,19 +115,19 @@ jobs:
           body: |
             ## Hytale Server v${{ steps.config.outputs.version }}
 
-            ### Docker Pull
-            ```bash
-            docker pull ketbom/hytale-server:${{ steps.config.outputs.version }}
-            ```
-
             ### Quick Start
             ```bash
-            mkdir hytale-server && cd hytale-server
+            mkdir hytale && cd hytale
             curl -O https://raw.githubusercontent.com/${{ github.repository }}/main/docker-compose.yml
             mkdir -p server data/universe data/mods data/logs data/config
             # Add HytaleServer.jar and Assets.zip to ./server/
             docker compose up -d
+            # Open http://localhost:3000
             ```
+
+            ### Docker Images
+            - `ketbom/hytale-server:${{ steps.config.outputs.version }}`
+            - `ketbom/hytale-panel:${{ steps.config.outputs.version }}`
           draft: false
           prerelease: false
           generate_release_notes: true

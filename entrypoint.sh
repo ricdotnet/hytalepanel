@@ -84,4 +84,20 @@ if [ -n "$SERVER_EXTRA_ARGS" ]; then
     SERVER_ARGS="$SERVER_ARGS $SERVER_EXTRA_ARGS"
 fi
 
+# Create command pipe for web panel
+PIPE="/tmp/hytale-console"
+rm -f "$PIPE"
+mkfifo "$PIPE"
+chmod 666 "$PIPE"
+
+# Background process to read from pipe and forward to stdin
+(while true; do
+    if read -r cmd < "$PIPE" 2>/dev/null; then
+        echo "$cmd"
+    fi
+done) &
+PIPE_PID=$!
+
+trap "kill $PIPE_PID 2>/dev/null; rm -f $PIPE" EXIT
+
 exec java $JAVA_FLAGS -jar HytaleServer.jar $SERVER_ARGS

@@ -25,3 +25,17 @@ services:
       - ./data/mods:/opt/hytale/mods
       - ./data/logs:/opt/hytale/logs
       - ./data/config:/opt/hytale/config
+
+  panel:
+    build: ./panel
+    container_name: hytale-panel
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      CONTAINER_NAME: "hytale-server"
+      PANEL_PORT: "3000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on:
+      - hytale

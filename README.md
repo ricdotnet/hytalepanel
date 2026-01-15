@@ -1,23 +1,15 @@
 # Hytale Dedicated Server - Docker
 
-Docker image for running a Hytale dedicated server.
+Docker image for Hytale dedicated server with web panel.
 
-## Requirements
+## Quick Start
 
-- Docker & Docker Compose
-- Hytale account (to download server files)
-- Minimum 4GB RAM (8GB+ recommended)
-
-## Installation
-
-### Step 1: Create folder and download compose file
+### Step 1: Download docker-compose
 
 ```bash
-mkdir hytale-server && cd hytale-server
+mkdir hytale && cd hytale
 curl -O https://raw.githubusercontent.com/ketbom/hytale-server/main/docker-compose.yml
 ```
-
-Or manually create `docker-compose.yml` and copy the contents from this repository.
 
 ### Step 2: Create directories
 
@@ -40,62 +32,39 @@ Download from your Hytale account and place in `./server/`:
 - `HytaleServer.jar`
 - `Assets.zip`
 
-### Step 4: Start server
+### Step 4: Start
 
 ```bash
 docker compose up -d
 ```
 
-### Step 5: Authenticate server (first time only)
+### Step 5: Open Panel
 
-```bash
-docker attach hytale-server
-```
+Open **http://localhost:3000**
 
-In the console, type:
+Click **"🔐 Authenticate Server"** and follow the instructions.
 
-```
-/auth login device
-```
+Done! ✅
 
-Visit the URL shown and enter the code. Once done, detach with `Ctrl+P` + `Ctrl+Q`.
+## Web Panel
 
-## Server Console
+Access at **http://localhost:3000**
 
-Access the server console:
-
-```bash
-docker attach hytale-server
-```
-
-Common commands:
-
-```
-/auth login device      # Authenticate server
-/stop                   # Shutdown server
-/save                   # Save world
-/whitelist add <user>   # Add player to whitelist
-/whitelist remove <user>
-/ban <user>             # Ban player
-/unban <user>
-/op <user>              # Make player operator
-/deop <user>
-```
-
-Detach without stopping: `Ctrl+P` + `Ctrl+Q`
+- 📜 Real-time console logs
+- ⌨️ Send commands
+- 🔐 One-click authentication
+- 📊 Server status
 
 ## Configuration
 
-Edit `docker-compose.yml` to configure the server:
+Edit `docker-compose.yml`:
 
-### Memory Settings
+### Memory
 
-| Variable   | Default | Description                     |
-| ---------- | ------- | ------------------------------- |
-| `JAVA_XMS` | `4G`    | Minimum RAM allocated to server |
-| `JAVA_XMX` | `8G`    | Maximum RAM allocated to server |
-
-**Recommended values:**
+| Variable   | Default | Description |
+| ---------- | ------- | ----------- |
+| `JAVA_XMS` | `4G`    | Minimum RAM |
+| `JAVA_XMX` | `8G`    | Maximum RAM |
 
 | Players | JAVA_XMX |
 | ------- | -------- |
@@ -104,63 +73,31 @@ Edit `docker-compose.yml` to configure the server:
 | 20-50   | 8G       |
 | 50+     | 12G+     |
 
-### Server Settings
+### Server
 
-| Variable        | Default   | Description                             |
-| --------------- | --------- | --------------------------------------- |
-| `BIND_PORT`     | `5520`    | UDP port for player connections         |
-| `BIND_ADDR`     | `0.0.0.0` | IP address to bind (0.0.0.0 = all)      |
-| `VIEW_DISTANCE` | -         | Render distance in chunks (affects RAM) |
-| `MAX_PLAYERS`   | -         | Maximum concurrent players              |
-| `SERVER_NAME`   | -         | Server name shown to players            |
-
-### JVM Tuning (Advanced)
-
-| Variable                  | Default | Description                    |
-| ------------------------- | ------- | ------------------------------ |
-| `USE_G1GC`                | `true`  | Use G1 garbage collector       |
-| `MAX_GC_PAUSE_MILLIS`     | `200`   | Target GC pause time (ms)      |
-| `G1_NEW_SIZE_PERCENT`     | `30`    | G1 young generation min size % |
-| `G1_MAX_NEW_SIZE_PERCENT` | `40`    | G1 young generation max size % |
-| `G1_HEAP_REGION_SIZE`     | `8M`    | G1 heap region size            |
-| `JAVA_EXTRA_FLAGS`        | -       | Additional JVM flags           |
-| `SERVER_EXTRA_ARGS`       | -       | Additional server arguments    |
-
-### Example: Small Server
-
-```yaml
-environment:
-  JAVA_XMS: "2G"
-  JAVA_XMX: "4G"
-  MAX_PLAYERS: "10"
-```
-
-### Example: Large Server
-
-```yaml
-environment:
-  JAVA_XMS: "8G"
-  JAVA_XMX: "16G"
-  MAX_PLAYERS: "100"
-  VIEW_DISTANCE: "16"
-```
+| Variable        | Default | Description              |
+| --------------- | ------- | ------------------------ |
+| `BIND_PORT`     | `5520`  | UDP port                 |
+| `VIEW_DISTANCE` | -       | Render distance (chunks) |
+| `MAX_PLAYERS`   | -       | Maximum players          |
+| `SERVER_NAME`   | -       | Server name              |
 
 ## Directory Structure
 
 ```
-hytale-server/
+hytale/
 ├── docker-compose.yml
-├── server/                 # Server files
+├── server/
 │   ├── HytaleServer.jar
 │   └── Assets.zip
-└── data/                   # Persistent data (don't delete)
-    ├── universe/           # World saves
-    ├── mods/               # Server mods
-    ├── logs/               # Server logs
-    └── config/             # Server configuration
+└── data/
+    ├── universe/    # World saves
+    ├── mods/        # Server mods
+    ├── logs/        # Server logs
+    └── config/      # Configuration
 ```
 
-## Common Operations
+## Commands
 
 ### View logs
 
@@ -168,30 +105,16 @@ hytale-server/
 docker compose logs -f
 ```
 
-### Stop server
+### Stop
 
 ```bash
 docker compose down
 ```
 
-### Restart server
-
-```bash
-docker compose restart
-```
-
-### Update image
+### Update
 
 ```bash
 docker compose pull
-docker compose up -d
-```
-
-### Update server files
-
-```bash
-docker compose down
-# Replace HytaleServer.jar and Assets.zip in ./server/
 docker compose up -d
 ```
 
@@ -207,17 +130,20 @@ docker compose start
 
 Open UDP port 5520:
 
-**Linux:**
-
 ```bash
+# Linux
 ufw allow 5520/udp
-```
 
-**Windows:**
-
-```powershell
+# Windows (PowerShell)
 New-NetFirewallRule -DisplayName "Hytale" -Direction Inbound -Protocol UDP -LocalPort 5520 -Action Allow
 ```
+
+## Ports
+
+| Service | Port     | Description      |
+| ------- | -------- | ---------------- |
+| Server  | 5520/UDP | Game connections |
+| Panel   | 3000/TCP | Web interface    |
 
 ## License
 

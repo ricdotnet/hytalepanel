@@ -8,28 +8,30 @@ services:
     ports:
       - "5520:5520/udp"
     environment:
-      # Memory
       JAVA_XMS: "4G"
       JAVA_XMX: "8G"
-
-      # Network
       BIND_PORT: "5520"
       BIND_ADDR: "0.0.0.0"
-
-      # Server (uncomment to use)
+      USE_G1GC: "true"
       # VIEW_DISTANCE: "12"
       # MAX_PLAYERS: "20"
       # SERVER_NAME: "My Hytale Server"
-
-      # JVM tuning
-      USE_G1GC: "true"
-      MAX_GC_PAUSE_MILLIS: "200"
-      G1_NEW_SIZE_PERCENT: "30"
-      G1_MAX_NEW_SIZE_PERCENT: "40"
-      G1_HEAP_REGION_SIZE: "8M"
     volumes:
       - ./server:/opt/hytale
       - ./data/universe:/opt/hytale/universe
       - ./data/mods:/opt/hytale/mods
       - ./data/logs:/opt/hytale/logs
       - ./data/config:/opt/hytale/config
+
+  panel:
+    image: ketbom/hytale-panel:latest
+    container_name: hytale-panel
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      CONTAINER_NAME: "hytale-server"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on:
+      - hytale
