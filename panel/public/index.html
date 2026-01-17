@@ -6,7 +6,16 @@
   <title>Hytale Server Panel</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=VT323&family=Press+Start+2P&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+  <style>
+    @font-face {
+      font-family: '8bit Operator';
+      src: url('/fonts/8bitoperator_jve.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+  </style>
   <style>
     :root {
       --hytale-orange: #f5a623;
@@ -24,15 +33,21 @@
       --success: #55ff55;
       --warning: #ffaa00;
       --error: #ff5555;
+      --font-ui: 'VT323', monospace;
+    }
+
+    body[data-lang="uk"] {
+      --font-ui: '8bit Operator', monospace;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
-      font-family: 'VT323', monospace;
+      font-family: var(--font-ui);
       background: var(--mc-darker);
       color: var(--text);
       min-height: 100vh;
+      font-size: 18px;
     }
 
     body::before {
@@ -50,7 +65,7 @@
 
     /* MC Buttons */
     .mc-btn {
-      font-family: 'VT323', monospace;
+      font-family: var(--font-ui);
       font-size: 18px;
       padding: 10px 16px;
       background: linear-gradient(180deg, #7a7a7a 0%, #5a5a5a 50%, #4a4a4a 50%, #3a3a3a 100%);
@@ -247,7 +262,7 @@
       border-left: 3px solid #2a4a1a;
       padding: 12px 20px;
       color: var(--text);
-      font-family: 'VT323', monospace;
+      font-family: var(--font-ui);
       font-size: 20px;
       cursor: pointer;
       text-shadow: 2px 2px 0 #2a4a1a;
@@ -269,7 +284,7 @@
 
     .tab-btn {
       flex: 1;
-      font-family: 'VT323', monospace;
+      font-family: var(--font-ui);
       font-size: 16px;
       padding: 10px 8px;
       background: linear-gradient(180deg, #4a4a4a 0%, #3a3a3a 100%);
@@ -364,7 +379,7 @@
       border-color: #3a3a3a #1a1a1a #1a1a1a #3a3a3a;
       color: var(--text);
       cursor: pointer;
-      font-family: 'VT323', monospace;
+      font-family: var(--font-ui);
       font-size: 16px;
       margin-bottom: 4px;
     }
@@ -495,6 +510,312 @@
     @keyframes spin { to { transform: rotate(360deg); } }
 
     .hint { font-size: 12px; color: var(--text-dim); margin-top: 8px; }
+
+    /* File Manager Styles */
+    .file-breadcrumb {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2px;
+      padding: 6px 8px;
+      background: var(--mc-dark);
+      border: 2px solid var(--mc-border-light);
+      margin-bottom: 8px;
+      font-size: 12px;
+    }
+
+    .breadcrumb-item {
+      color: var(--hytale-cyan);
+      cursor: pointer;
+      padding: 2px 4px;
+    }
+
+    .breadcrumb-item:hover {
+      background: var(--mc-panel);
+      color: var(--hytale-yellow);
+    }
+
+    .breadcrumb-item::after {
+      content: ' /';
+      color: var(--text-dim);
+      margin-left: 2px;
+    }
+
+    .breadcrumb-item:last-child::after { content: ''; }
+
+    .file-toolbar {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 8px;
+    }
+
+    .file-toolbar .mc-btn {
+      flex: 1;
+      font-size: 14px;
+      padding: 6px 8px;
+    }
+
+    .upload-zone {
+      display: none;
+      border: 2px dashed var(--hytale-orange);
+      background: rgba(245, 166, 35, 0.1);
+      padding: 16px;
+      margin-bottom: 8px;
+      text-align: center;
+      cursor: pointer;
+    }
+
+    .upload-zone.visible { display: block; }
+
+    .upload-zone.dragover {
+      background: rgba(245, 166, 35, 0.25);
+      border-color: var(--hytale-yellow);
+    }
+
+    .upload-icon { font-size: 24px; color: var(--hytale-orange); }
+    .upload-text { font-size: 14px; color: var(--text); margin: 4px 0; }
+    .upload-hint { font-size: 10px; color: var(--text-dim); }
+
+    .upload-progress { display: none; margin-top: 10px; }
+    .upload-progress.visible { display: block; }
+
+    .upload-progress-bar {
+      height: 8px;
+      background: var(--mc-dark);
+      border: 1px solid var(--mc-border-light);
+    }
+
+    .upload-progress-fill {
+      height: 100%;
+      background: var(--mc-green);
+      width: 0%;
+      transition: width 0.2s;
+    }
+
+    .upload-progress-text {
+      font-size: 10px;
+      color: var(--text-dim);
+      margin-top: 4px;
+    }
+
+    .file-list {
+      background: var(--mc-dark);
+      border: 2px solid var(--mc-border-light);
+      max-height: 280px;
+      overflow-y: auto;
+    }
+
+    .file-list-header {
+      display: grid;
+      grid-template-columns: 1fr 50px 60px;
+      padding: 6px 8px;
+      background: var(--mc-panel);
+      border-bottom: 1px solid var(--mc-border-light);
+      font-size: 10px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+    }
+
+    .file-list-body { min-height: 60px; }
+
+    .file-item {
+      display: grid;
+      grid-template-columns: 1fr 50px 60px;
+      padding: 5px 8px;
+      border-bottom: 1px solid var(--mc-border-light);
+      font-size: 13px;
+      cursor: pointer;
+      align-items: center;
+    }
+
+    .file-item:hover { background: var(--mc-panel); }
+
+    .file-name {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .file-icon {
+      font-size: 10px;
+      padding: 1px 3px;
+      background: var(--mc-panel-light);
+      border-radius: 2px;
+    }
+
+    .file-icon.folder { color: var(--hytale-yellow); background: rgba(255, 217, 61, 0.2); }
+    .file-icon.java { color: #f89820; background: rgba(248, 152, 32, 0.2); }
+    .file-icon.archive { color: var(--hytale-cyan); background: rgba(78, 205, 196, 0.2); }
+    .file-icon.json, .file-icon.yaml, .file-icon.config { color: var(--mc-green-light); background: rgba(124, 179, 66, 0.2); }
+
+    .file-size {
+      font-size: 11px;
+      color: var(--text-dim);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .file-actions { display: flex; gap: 2px; }
+
+    .file-action-btn {
+      background: transparent;
+      border: 1px solid var(--mc-border-light);
+      color: var(--text-dim);
+      padding: 2px 5px;
+      font-size: 9px;
+      cursor: pointer;
+      font-family: 'VT323', monospace;
+    }
+
+    .file-action-btn:hover {
+      background: var(--mc-panel);
+      color: var(--text);
+      border-color: var(--hytale-orange);
+    }
+
+    .file-action-btn.danger:hover {
+      border-color: var(--error);
+      color: var(--error);
+    }
+
+    .file-empty {
+      padding: 20px;
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 14px;
+    }
+
+    /* Editor Modal */
+    .editor-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 1000;
+      padding: 20px;
+    }
+
+    .editor-modal.visible {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .editor-container {
+      background: var(--mc-panel);
+      border: 4px solid;
+      border-color: #4a4a4a #1a1a1a #1a1a1a #4a4a4a;
+      width: 100%;
+      max-width: 800px;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .editor-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      background: linear-gradient(180deg, #4a4a4a 0%, #3a3a3a 100%);
+      border-bottom: 2px solid var(--mc-dark);
+    }
+
+    .editor-filename {
+      font-size: 14px;
+      color: var(--hytale-yellow);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .editor-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .editor-checkbox {
+      font-size: 11px;
+      color: var(--text-dim);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .editor-body {
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .editor-body textarea {
+      width: 100%;
+      height: 400px;
+      background: var(--mc-darker);
+      color: var(--text);
+      border: none;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      padding: 10px;
+      resize: none;
+      line-height: 1.5;
+    }
+
+    .editor-body textarea:focus { outline: none; }
+
+    .editor-status {
+      padding: 4px 12px;
+      font-size: 11px;
+      color: var(--text-dim);
+      background: var(--mc-dark);
+      border-top: 1px solid var(--mc-border-light);
+    }
+
+    .editor-status.saving { color: var(--hytale-orange); }
+    .editor-status.saved { color: var(--success); }
+    .editor-status.error { color: var(--error); }
+
+    /* Language Selector */
+    .lang-selector {
+      position: relative;
+    }
+
+    .lang-dropdown {
+      font-family: var(--font-ui);
+      font-size: 14px;
+      padding: 6px 28px 6px 10px;
+      background: var(--mc-dark);
+      border: 2px solid var(--mc-border-light);
+      color: var(--text);
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      outline: none;
+    }
+
+    .lang-dropdown:hover {
+      border-color: var(--hytale-orange);
+    }
+
+    .lang-dropdown:focus {
+      border-color: var(--hytale-orange);
+    }
+
+    .lang-dropdown option {
+      background: var(--mc-dark);
+      color: var(--text);
+    }
+
+    .lang-selector::after {
+      content: '▼';
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 8px;
+      color: var(--text-dim);
+      pointer-events: none;
+    }
   </style>
 </head>
 <body>
@@ -508,6 +829,12 @@
         </div>
       </div>
       <div class="header-right">
+        <div class="lang-selector">
+          <select class="lang-dropdown" id="lang-select">
+            <option value="en">English</option>
+            <option value="uk">Українська</option>
+          </select>
+        </div>
         <span class="uptime-display" id="uptime">00:00:00</span>
         <div class="status-badge">
           <div class="status-dot" id="status-dot"></div>
@@ -532,6 +859,7 @@
         <div class="card">
           <div class="tabs-header">
             <button class="tab-btn active" data-tab="setup">Setup</button>
+            <button class="tab-btn" data-tab="files">Files</button>
             <button class="tab-btn" data-tab="commands">Commands</button>
             <button class="tab-btn" data-tab="control">Control</button>
           </div>
@@ -574,6 +902,43 @@
             <p class="hint">Downloads ~2GB from Hytale</p>
           </div>
 
+          <!-- Files Tab -->
+          <div class="tab-content" id="tab-files">
+            <div class="file-breadcrumb" id="file-breadcrumb">
+              <span class="breadcrumb-item" data-path="/">/opt/hytale</span>
+            </div>
+
+            <div class="file-toolbar">
+              <button class="mc-btn small" id="btn-refresh" title="Refresh">↻</button>
+              <button class="mc-btn small" id="btn-new-folder" title="New Folder">+ Dir</button>
+              <button class="mc-btn small" id="btn-upload" title="Upload">Upload</button>
+            </div>
+
+            <div class="upload-zone" id="upload-zone">
+              <div class="upload-content">
+                <div class="upload-icon">⬆</div>
+                <div class="upload-text">Drop files here</div>
+                <div class="upload-hint">Max 100MB | .jar .zip .json .yaml</div>
+                <input type="file" id="file-input" style="display:none" multiple>
+              </div>
+              <div class="upload-progress" id="upload-progress">
+                <div class="upload-progress-bar"><div class="upload-progress-fill" id="upload-progress-fill"></div></div>
+                <div class="upload-progress-text" id="upload-progress-text">Uploading...</div>
+              </div>
+            </div>
+
+            <div class="file-list" id="file-list">
+              <div class="file-list-header">
+                <span class="file-col-name">Name</span>
+                <span class="file-col-size">Size</span>
+                <span class="file-col-actions"></span>
+              </div>
+              <div class="file-list-body" id="file-list-body">
+                <div class="file-empty">Loading...</div>
+              </div>
+            </div>
+          </div>
+
           <!-- Commands Tab -->
           <div class="tab-content" id="tab-commands">
             <div class="cmd-section">
@@ -609,8 +974,307 @@
     </div>
   </div>
 
+  <!-- Editor Modal -->
+  <div class="editor-modal" id="editor-modal">
+    <div class="editor-container">
+      <div class="editor-header">
+        <span class="editor-filename" id="editor-filename">filename.json</span>
+        <div class="editor-actions">
+          <label class="editor-checkbox">
+            <input type="checkbox" id="editor-backup" checked> Backup
+          </label>
+          <button class="mc-btn small primary" id="btn-save">Save</button>
+          <button class="mc-btn small" id="btn-close-editor">Close</button>
+        </div>
+      </div>
+      <div class="editor-body">
+        <textarea id="editor-content" spellcheck="false"></textarea>
+      </div>
+      <div class="editor-status" id="editor-status">Ready</div>
+    </div>
+  </div>
+
   <script src="/socket.io/socket.io.js"></script>
   <script>
+    // ============================================
+    // TRANSLATIONS
+    // ============================================
+    const translations = {
+      en: {
+        serverPanel: 'Server Panel',
+        online: 'ONLINE',
+        offline: 'OFFLINE',
+        console: 'Console',
+        enterCommand: 'Enter command...',
+        send: 'SEND',
+        setup: 'Setup',
+        files: 'Files',
+        commands: 'Commands',
+        control: 'Control',
+        checking: 'Checking...',
+        filesReady: 'Files ready',
+        missingFiles: 'Missing files',
+        downloadFiles: 'Download Files',
+        redownload: 'Re-download',
+        downloadHint: 'Downloads ~2GB from Hytale',
+        credentialsSaved: '✓ Credentials saved',
+        noCredentials: '○ No credentials',
+        authRequired: 'Auth Required',
+        openLink: 'Open link:',
+        code: 'Code:',
+        starting: 'Starting...',
+        waitingAuth: 'Waiting auth...',
+        waiting: 'Waiting...',
+        downloading: 'Downloading...',
+        extracting: 'Extracting...',
+        done: 'Done!',
+        error: 'Error',
+        auth: 'Auth',
+        download: 'Download',
+        extract: 'Extract',
+        login: 'Login',
+        status: 'Status',
+        saveCreds: 'Save Creds',
+        server: 'Server',
+        allCommands: 'All Commands',
+        stop: 'Stop',
+        start: 'START',
+        restart: 'RESTART',
+        stopServer: 'STOP SERVER',
+        wipeData: 'WIPE DATA',
+        unknown: 'Unknown',
+        game: 'Game',
+        panel: 'Panel',
+        confirmRestart: 'Restart?',
+        confirmStop: 'Stop?',
+        confirmWipe: 'DELETE ALL DATA?',
+        confirmWipeSure: 'SURE?',
+        refresh: 'Refresh',
+        newFolder: '+ Dir',
+        upload: 'Upload',
+        dropFilesHere: 'Drop files here',
+        uploadHint: 'Max 100MB | .jar .zip .json .yaml',
+        uploading: 'Uploading',
+        name: 'Name',
+        size: 'Size',
+        loading: 'Loading...',
+        emptyDir: 'Empty directory',
+        errorLoading: 'Error loading',
+        back: '(back)',
+        edit: 'Edit',
+        folderName: 'Folder name:',
+        backup: 'Backup',
+        save: 'Save',
+        close: 'Close',
+        ready: 'Ready',
+        saving: 'Saving...',
+        saved: 'Saved',
+        savedWithBackup: 'Saved (backup created)',
+        cannotEditBinary: 'Cannot edit binary file',
+        fileSaved: 'File saved',
+        saveFailed: 'Save failed',
+        folderCreated: 'Folder created',
+        deleted: 'Deleted',
+        renamed: 'Renamed',
+        uploaded: 'Uploaded',
+        uploadFailed: 'Failed',
+        uploadError: 'Upload error',
+        confirmDelete: 'Delete',
+        restarted: 'Restarted',
+        stopped: 'Stopped',
+        started: 'Started',
+        dataWiped: 'Data wiped!',
+        failed: 'failed',
+        downloadComplete: 'Download complete!',
+        filesReadyMsg: '✓ Files ready!'
+      },
+      uk: {
+        serverPanel: 'Панель сервера',
+        online: 'ОНЛАЙН',
+        offline: 'ОФЛАЙН',
+        console: 'Консоль',
+        enterCommand: 'Введіть команду...',
+        send: 'НАДІСЛАТИ',
+        setup: 'Налаштування',
+        files: 'Файли',
+        commands: 'Команди',
+        control: 'Керування',
+        checking: 'Перевірка...',
+        filesReady: 'Файли готові',
+        missingFiles: 'Відсутні файли',
+        downloadFiles: 'Завантажити файли',
+        redownload: 'Перезавантажити',
+        downloadHint: 'Завантажує ~2ГБ з Hytale',
+        credentialsSaved: '✓ Облікові дані збережено',
+        noCredentials: '○ Немає облікових даних',
+        authRequired: 'Потрібна авторизація',
+        openLink: 'Відкрийте посилання:',
+        code: 'Код:',
+        starting: 'Запуск...',
+        waitingAuth: 'Очікування авторизації...',
+        waiting: 'Очікування...',
+        downloading: 'Завантаження...',
+        extracting: 'Розпакування...',
+        done: 'Готово!',
+        error: 'Помилка',
+        auth: 'Авторизація',
+        download: 'Завантаження',
+        extract: 'Розпакування',
+        login: 'Увійти',
+        status: 'Статус',
+        saveCreds: 'Зберегти',
+        server: 'Сервер',
+        allCommands: 'Усі команди',
+        stop: 'Стоп',
+        start: 'СТАРТ',
+        restart: 'РЕСТАРТ',
+        stopServer: 'ЗУПИНИТИ СЕРВЕР',
+        wipeData: 'ОЧИСТИТИ ДАНІ',
+        unknown: 'Невідомо',
+        game: 'Гра',
+        panel: 'Панель',
+        confirmRestart: 'Перезапустити?',
+        confirmStop: 'Зупинити?',
+        confirmWipe: 'ВИДАЛИТИ ВСІ ДАНІ?',
+        confirmWipeSure: 'ВПЕВНЕНІ?',
+        refresh: 'Оновити',
+        newFolder: '+ Папка',
+        upload: 'Завантажити',
+        dropFilesHere: 'Перетягніть файли сюди',
+        uploadHint: 'Макс 100МБ | .jar .zip .json .yaml',
+        uploading: 'Завантаження',
+        name: 'Назва',
+        size: 'Розмір',
+        loading: 'Завантаження...',
+        emptyDir: 'Порожня папка',
+        errorLoading: 'Помилка завантаження',
+        back: '(назад)',
+        edit: 'Редагувати',
+        folderName: 'Назва папки:',
+        backup: 'Резервна копія',
+        save: 'Зберегти',
+        close: 'Закрити',
+        ready: 'Готово',
+        saving: 'Збереження...',
+        saved: 'Збережено',
+        savedWithBackup: 'Збережено (створено резервну копію)',
+        cannotEditBinary: 'Неможливо редагувати бінарний файл',
+        fileSaved: 'Файл збережено',
+        saveFailed: 'Помилка збереження',
+        folderCreated: 'Папку створено',
+        deleted: 'Видалено',
+        renamed: 'Перейменовано',
+        uploaded: 'Завантажено',
+        uploadFailed: 'Помилка',
+        uploadError: 'Помилка завантаження',
+        confirmDelete: 'Видалити',
+        restarted: 'Перезапущено',
+        stopped: 'Зупинено',
+        started: 'Запущено',
+        dataWiped: 'Дані очищено!',
+        failed: 'помилка',
+        downloadComplete: 'Завантаження завершено!',
+        filesReadyMsg: '✓ Файли готові!'
+      }
+    };
+
+    let currentLang = localStorage.getItem('hytale-panel-lang') || 'en';
+
+    function t(key) {
+      return translations[currentLang][key] || translations.en[key] || key;
+    }
+
+    function setLanguage(lang) {
+      currentLang = lang;
+      localStorage.setItem('hytale-panel-lang', lang);
+      document.body.setAttribute('data-lang', lang);
+      const langSelect = document.getElementById('lang-select');
+      if (langSelect) langSelect.value = lang;
+      updateAllTranslations();
+    }
+
+    function updateAllTranslations() {
+      // Header
+      document.querySelector('.logo-subtitle').textContent = t('serverPanel');
+
+      // Status
+      const isOnline = statusDot.classList.contains('online');
+      statusText.textContent = isOnline ? t('online') : t('offline');
+
+      // Console
+      document.querySelector('.card-header').textContent = t('console');
+      cmdInput.placeholder = t('enterCommand');
+      $('send-btn').textContent = t('send');
+
+      // Tabs
+      document.querySelector('[data-tab="setup"]').textContent = t('setup');
+      document.querySelector('[data-tab="files"]').textContent = t('files');
+      document.querySelector('[data-tab="commands"]').textContent = t('commands');
+      document.querySelector('[data-tab="control"]').textContent = t('control');
+
+      // Setup tab
+      const isReady = fileStatus.classList.contains('ready');
+      setupText.textContent = isReady ? t('filesReady') : t('missingFiles');
+      if (!downloadBtn.disabled) {
+        downloadBtn.textContent = isReady ? t('redownload') : t('downloadFiles');
+      }
+      document.querySelector('.hint').textContent = t('downloadHint');
+
+      // Auth box
+      document.querySelector('.auth-box h3').textContent = t('authRequired');
+      document.querySelectorAll('.auth-box p')[0].textContent = t('openLink');
+      document.querySelectorAll('.auth-box p')[1].textContent = t('code');
+
+      // Progress steps
+      document.querySelector('#step-auth span:last-child').textContent = t('auth');
+      document.querySelector('#step-download span:last-child').textContent = t('download');
+      document.querySelector('#step-extract span:last-child').textContent = t('extract');
+      document.querySelector('#step-complete span:last-child').textContent = t('done');
+
+      // Commands tab
+      document.querySelectorAll('.cmd-label')[0].textContent = t('auth');
+      document.querySelectorAll('.cmd-label')[1].textContent = t('server');
+      document.querySelectorAll('.quick-btn span:first-child')[0].textContent = t('login');
+      document.querySelectorAll('.quick-btn span:first-child')[1].textContent = t('status');
+      document.querySelectorAll('.quick-btn span:first-child')[2].textContent = t('saveCreds');
+      document.querySelectorAll('.quick-btn span:first-child')[3].textContent = t('allCommands');
+      document.querySelectorAll('.quick-btn span:first-child')[4].textContent = t('stop');
+
+      // Control tab
+      $('start-btn').textContent = t('start');
+      $('restart-btn').textContent = t('restart');
+      $('stop-btn').textContent = t('stopServer');
+      $('wipe-btn').textContent = t('wipeData');
+
+      // Info compact
+      document.querySelectorAll('.info-label')[0].textContent = t('status');
+      document.querySelectorAll('.info-label')[1].textContent = t('game');
+      document.querySelectorAll('.info-label')[2].textContent = t('panel');
+
+      // Files tab
+      $('btn-refresh').title = t('refresh');
+      $('btn-new-folder').textContent = t('newFolder');
+      $('btn-upload').textContent = t('upload');
+      document.querySelector('.upload-text').textContent = t('dropFilesHere');
+      document.querySelector('.upload-hint').textContent = t('uploadHint');
+      document.querySelector('.file-col-name').textContent = t('name');
+      document.querySelector('.file-col-size').textContent = t('size');
+
+      // Editor
+      document.querySelector('.editor-checkbox').innerHTML = `<input type="checkbox" id="editor-backup" ${editorBackup.checked ? 'checked' : ''}> ${t('backup')}`;
+      $('btn-save').textContent = t('save');
+      $('btn-close-editor').textContent = t('close');
+
+      // Update file list back button text
+      const backItem = document.querySelector('.file-item-back span:nth-child(2)');
+      if (backItem) backItem.textContent = t('back');
+    }
+
+    // Language selector event
+    document.getElementById('lang-select').addEventListener('change', (e) => {
+      setLanguage(e.target.value);
+    });
+
     const socket = io();
     const $ = id => document.getElementById(id);
     const consoleEl = $('console'), cmdInput = $('cmd-input');
@@ -641,8 +1305,8 @@
         .replace(/^\[\d{4}\/\d{2}\/\d{2}\s+\d{2}:\d{2}:\d{2}\s+\w+\]\s*/gm, '');
     }
 
-    function getLogType(t) {
-      const l = t.toLowerCase();
+    function getLogType(text) {
+      const l = text.toLowerCase();
       if (l.includes('error') || l.includes('failed') || l.includes('exception')) return 'error';
       if (l.includes('warn')) return 'warn';
       if (l.includes('oauth') || l.includes('user_code') || l.includes('authorization')) return 'auth';
@@ -652,11 +1316,11 @@
 
     function addLog(text, type = '') {
       cleanLog(text).split('\n').forEach(line => {
-        const t = line.trim();
-        if (!t) return;
+        const trimmed = line.trim();
+        if (!trimmed) return;
         const div = document.createElement('div');
-        div.className = 'log-line ' + (type || getLogType(t));
-        div.textContent = t;
+        div.className = 'log-line ' + (type || getLogType(trimmed));
+        div.textContent = trimmed;
         consoleEl.appendChild(div);
       });
       consoleEl.scrollTop = consoleEl.scrollHeight;
@@ -664,7 +1328,7 @@
     }
 
     function showToast(msg, type = '') {
-      document.querySelectorAll('.toast').forEach(t => t.remove());
+      document.querySelectorAll('.toast').forEach(el => el.remove());
       const toast = document.createElement('div');
       toast.className = 'toast ' + type;
       toast.textContent = msg;
@@ -686,13 +1350,13 @@
       ai.textContent = f.hasAssets ? '✓' : '✗'; ai.className = 'icon ' + (f.hasAssets ? 'ok' : 'missing');
       fileStatus.className = 'file-status ' + (f.ready ? 'ready' : 'missing');
       setupIcon.textContent = f.ready ? '✓' : '!';
-      setupText.textContent = f.ready ? 'Files ready' : 'Missing files';
-      downloadBtn.textContent = f.ready ? 'Re-download' : 'Download Files';
+      setupText.textContent = f.ready ? t('filesReady') : t('missingFiles');
+      downloadBtn.textContent = f.ready ? t('redownload') : t('downloadFiles');
     }
 
-    function parseAuth(t) {
-      const u = t.match(/https:\/\/oauth\.accounts\.hytale\.com[^\s]+/);
-      const c = t.match(/(?:user_code[=:]\s*|code:\s*)([A-Za-z0-9]+)/i);
+    function parseAuth(text) {
+      const u = text.match(/https:\/\/oauth\.accounts\.hytale\.com\S+/);
+      const c = text.match(/(?:user_code[=:]\s*|code:\s*)([A-Za-z0-9]+)/i);
       if (u || c) {
         authBox.classList.add('visible');
         if (u) { authLink.href = u[0]; authLink.textContent = u[0]; }
@@ -713,12 +1377,12 @@
 
     function stopDlTimer() { if (dlTimer) { clearInterval(dlTimer); dlTimer = null; } }
 
-    socket.on('log', t => addLog(t.trim()));
+    socket.on('log', msg => addLog(msg.trim()));
 
     socket.on('status', s => {
       statusDot.className = 'status-dot' + (s.running ? ' online' : '');
-      statusText.textContent = s.running ? 'ONLINE' : 'OFFLINE';
-      infoStatus.textContent = s.status || 'Unknown';
+      statusText.textContent = s.running ? t('online') : t('offline');
+      infoStatus.textContent = s.status || t('unknown');
       uptimeEl.textContent = formatUptime(s.startedAt);
     });
 
@@ -726,52 +1390,52 @@
 
     socket.on('downloader-auth', a => {
       authStatus.className = 'auth-status ' + (a ? 'ok' : 'missing');
-      authStatus.textContent = a ? '✓ Credentials saved' : '○ No credentials';
+      authStatus.textContent = a ? t('credentialsSaved') : t('noCredentials');
     });
 
     socket.on('download-status', d => {
       progressSection.classList.add('visible');
       if (d.status === 'starting') {
         downloadBtn.disabled = true;
-        downloadBtn.innerHTML = '<span class="spinner"></span> Starting...';
-        startDlTimer(); progressStatus.textContent = 'Starting...'; progressFill.style.width = '5%';
+        downloadBtn.innerHTML = '<span class="spinner"></span> ' + t('starting');
+        startDlTimer(); progressStatus.textContent = t('starting'); progressFill.style.width = '5%';
         setStep('step-auth', 'active');
       } else if (d.status === 'auth-required') {
         addLog(d.message, 'auth'); parseAuth(d.message);
-        progressStatus.textContent = 'Waiting auth...'; progressFill.style.width = '10%';
-        downloadBtn.disabled = false; downloadBtn.textContent = 'Waiting...';
+        progressStatus.textContent = t('waitingAuth'); progressFill.style.width = '10%';
+        downloadBtn.disabled = false; downloadBtn.textContent = t('waiting');
       } else if (d.status === 'output') {
         addLog(d.message);
         if (d.message.toLowerCase().includes('download')) {
           setStep('step-auth', 'done'); setStep('step-download', 'active');
-          progressStatus.textContent = 'Downloading...'; progressFill.style.width = '30%';
-          downloadBtn.innerHTML = '<span class="spinner"></span> Downloading...';
+          progressStatus.textContent = t('downloading'); progressFill.style.width = '30%';
+          downloadBtn.innerHTML = '<span class="spinner"></span> ' + t('downloading');
         }
         const p = d.message.match(/(\d+)%/);
         if (p) { progressFill.style.width = (30 + parseInt(p[1]) * 0.5) + '%'; progressStatus.textContent = p[1] + '%'; }
       } else if (d.status === 'extracting') {
         addLog(d.message, 'info'); setStep('step-download', 'done'); setStep('step-extract', 'active');
-        progressStatus.textContent = 'Extracting...'; progressFill.style.width = '85%';
-        downloadBtn.innerHTML = '<span class="spinner"></span> Extracting...';
+        progressStatus.textContent = t('extracting'); progressFill.style.width = '85%';
+        downloadBtn.innerHTML = '<span class="spinner"></span> ' + t('extracting');
       } else if (d.status === 'complete') {
         stopDlTimer();
         ['step-auth', 'step-download', 'step-extract', 'step-complete'].forEach(s => setStep(s, 'done'));
-        progressStatus.textContent = 'Done!'; progressFill.style.width = '100%';
-        downloadBtn.disabled = false; downloadBtn.textContent = 'Re-download';
+        progressStatus.textContent = t('done'); progressFill.style.width = '100%';
+        downloadBtn.disabled = false; downloadBtn.textContent = t('redownload');
         authBox.classList.remove('visible');
-        showToast('Download complete!'); addLog('✓ Files ready!', 'info');
+        showToast(t('downloadComplete')); addLog(t('filesReadyMsg'), 'info');
       } else if (d.status === 'done' || d.status === 'error') {
-        stopDlTimer(); downloadBtn.disabled = false; downloadBtn.textContent = 'Download Files';
-        if (d.status === 'error') { progressStatus.textContent = 'Error'; showToast(d.message, 'error'); addLog('✗ ' + d.message, 'error'); }
+        stopDlTimer(); downloadBtn.disabled = false; downloadBtn.textContent = t('downloadFiles');
+        if (d.status === 'error') { progressStatus.textContent = t('error'); showToast(d.message, 'error'); addLog('✗ ' + d.message, 'error'); }
       }
     });
 
     socket.on('command-result', r => { if (r.error) { addLog('Error: ' + r.error, 'error'); showToast('Failed', 'error'); }});
 
     socket.on('action-status', s => {
-      const m = { restart: 'Restarted', stop: 'Stopped', start: 'Started', wipe: 'Data wiped!' };
-      if (s.success) showToast(m[s.action] || 'Done');
-      else if (s.error) showToast(s.action + ' failed', 'error');
+      const m = { restart: t('restarted'), stop: t('stopped'), start: t('started'), wipe: t('dataWiped') };
+      if (s.success) showToast(m[s.action] || t('done'));
+      else if (s.error) showToast(s.action + ' ' + t('failed'), 'error');
     });
 
     socket.on('error', m => { addLog(m, 'error'); showToast(m, 'error'); });
@@ -787,9 +1451,311 @@
     document.querySelectorAll('.quick-btn').forEach(b => b.addEventListener('click', () => sendCmd(b.dataset.cmd)));
     downloadBtn.addEventListener('click', () => { authBox.classList.remove('visible'); progressSection.classList.remove('visible'); socket.emit('download'); });
     $('start-btn').addEventListener('click', () => socket.emit('start'));
-    $('restart-btn').addEventListener('click', () => { if (confirm('Restart?')) socket.emit('restart'); });
-    $('stop-btn').addEventListener('click', () => { if (confirm('Stop?')) sendCmd('/stop'); });
-    $('wipe-btn').addEventListener('click', () => { if (confirm('DELETE ALL DATA?')) if (confirm('SURE?')) socket.emit('wipe'); });
+    $('restart-btn').addEventListener('click', () => { if (confirm(t('confirmRestart'))) socket.emit('restart'); });
+    $('stop-btn').addEventListener('click', () => { if (confirm(t('confirmStop'))) sendCmd('/stop'); });
+    $('wipe-btn').addEventListener('click', () => { if (confirm(t('confirmWipe'))) if (confirm(t('confirmWipeSure'))) socket.emit('wipe'); });
+
+    // ============================================
+    // FILE MANAGER
+    // ============================================
+
+    const fileListBody = $('file-list-body');
+    const fileBreadcrumb = $('file-breadcrumb');
+    const uploadZone = $('upload-zone');
+    const fileInput = $('file-input');
+    const editorModal = $('editor-modal');
+    const editorFilename = $('editor-filename');
+    const editorContent = $('editor-content');
+    const editorStatus = $('editor-status');
+    const editorBackup = $('editor-backup');
+
+    let currentPath = '/';
+    let currentEditingFile = null;
+
+    const FILE_ICONS = {
+      folder: 'DIR', java: 'JAR', archive: 'ZIP', json: 'JSON',
+      yaml: 'YML', config: 'CFG', text: 'TXT', log: 'LOG', image: 'IMG', file: 'FILE'
+    };
+
+    function formatSize(bytes) {
+      if (bytes === null || bytes === undefined) return '-';
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + 'K';
+      return (bytes / (1024 * 1024)).toFixed(1) + 'M';
+    }
+
+    function updateBreadcrumb(pathStr) {
+      const parts = pathStr.split('/').filter(p => p);
+      let html = '<span class="breadcrumb-item" data-path="/">/opt/hytale</span>';
+      let accumulated = '';
+      for (const part of parts) {
+        accumulated += '/' + part;
+        html += `<span class="breadcrumb-item" data-path="${accumulated}">${part}</span>`;
+      }
+      fileBreadcrumb.innerHTML = html;
+      fileBreadcrumb.querySelectorAll('.breadcrumb-item').forEach(item => {
+        item.addEventListener('click', () => navigateTo(item.dataset.path));
+      });
+    }
+
+    function navigateTo(pathStr) {
+      currentPath = pathStr;
+      fileListBody.innerHTML = '<div class="file-empty">' + t('loading') + '</div>';
+      socket.emit('files:list', pathStr);
+    }
+
+    function renderFileList(files) {
+      let html = '';
+
+      // Add ".." to go back (if not in root)
+      if (currentPath !== '/') {
+        html += `
+          <div class="file-item file-item-back" data-name=".." data-is-dir="true">
+            <div class="file-name">
+              <span class="file-icon folder">..</span>
+              <span>${t('back')}</span>
+            </div>
+            <span class="file-size">-</span>
+            <div class="file-actions"></div>
+          </div>
+        `;
+      }
+
+      if (!files || files.length === 0) {
+        if (currentPath === '/') {
+          fileListBody.innerHTML = '<div class="file-empty">' + t('emptyDir') + '</div>';
+          return;
+        }
+      }
+
+      for (const file of files) {
+        const icon = FILE_ICONS[file.icon] || 'FILE';
+        html += `
+          <div class="file-item" data-name="${file.name}" data-is-dir="${file.isDirectory}" data-editable="${file.editable}">
+            <div class="file-name">
+              <span class="file-icon ${file.icon}">${icon}</span>
+              <span>${file.name}</span>
+            </div>
+            <span class="file-size">${formatSize(file.size)}</span>
+            <div class="file-actions">
+              ${file.editable ? '<button class="file-action-btn" data-action="edit">' + t('edit') + '</button>' : ''}
+              <button class="file-action-btn danger" data-action="del">X</button>
+            </div>
+          </div>
+        `;
+      }
+      fileListBody.innerHTML = html;
+
+      fileListBody.querySelectorAll('.file-item').forEach(item => {
+        const name = item.dataset.name;
+        const isDir = item.dataset.isDir === 'true';
+
+        // Single click for directories, double click for files
+        item.addEventListener('click', () => {
+          if (name === '..') {
+            const parts = currentPath.split('/').filter(p => p);
+            parts.pop();
+            navigateTo(parts.length ? '/' + parts.join('/') : '/');
+          } else if (isDir) {
+            navigateTo(currentPath === '/' ? '/' + name : currentPath + '/' + name);
+          }
+        });
+
+        // Double click to edit files
+        item.addEventListener('dblclick', () => {
+          if (!isDir && item.dataset.editable === 'true') {
+            openEditor(currentPath === '/' ? '/' + name : currentPath + '/' + name);
+          }
+        });
+
+        item.querySelectorAll('.file-action-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const action = btn.dataset.action;
+            const filePath = currentPath === '/' ? '/' + name : currentPath + '/' + name;
+            if (action === 'edit') {
+              openEditor(filePath);
+            } else if (action === 'del') {
+              if (confirm(t('confirmDelete') + ` "${name}"?`)) {
+                socket.emit('files:delete', filePath);
+              }
+            }
+          });
+        });
+      });
+    }
+
+    function openEditor(filePath) {
+      currentEditingFile = filePath;
+      editorFilename.textContent = filePath;
+      editorStatus.textContent = t('loading');
+      editorStatus.className = 'editor-status';
+      editorContent.value = '';
+      editorModal.classList.add('visible');
+      socket.emit('files:read', filePath);
+    }
+
+    function closeEditor() {
+      editorModal.classList.remove('visible');
+      currentEditingFile = null;
+    }
+
+    function saveFile() {
+      if (!currentEditingFile) return;
+      editorStatus.textContent = t('saving');
+      editorStatus.className = 'editor-status saving';
+      socket.emit('files:save', {
+        path: currentEditingFile,
+        content: editorContent.value,
+        createBackup: editorBackup.checked
+      });
+    }
+
+    // Socket handlers for file manager
+    socket.on('files:list-result', (result) => {
+      if (result.success) {
+        updateBreadcrumb(result.path);
+        renderFileList(result.files);
+      } else {
+        showToast(t('error') + ': ' + result.error, 'error');
+        fileListBody.innerHTML = '<div class="file-empty">' + t('errorLoading') + '</div>';
+      }
+    });
+
+    socket.on('files:read-result', (result) => {
+      if (result.success) {
+        editorContent.value = result.content;
+        editorStatus.textContent = t('ready');
+        editorStatus.className = 'editor-status';
+      } else if (result.binary) {
+        editorStatus.textContent = t('cannotEditBinary');
+        editorStatus.className = 'editor-status error';
+      } else {
+        editorStatus.textContent = t('error') + ': ' + result.error;
+        editorStatus.className = 'editor-status error';
+      }
+    });
+
+    socket.on('files:save-result', (result) => {
+      if (result.success) {
+        editorStatus.textContent = result.backup?.success ? t('savedWithBackup') : t('saved');
+        editorStatus.className = 'editor-status saved';
+        showToast(t('fileSaved'));
+      } else {
+        editorStatus.textContent = t('error') + ': ' + result.error;
+        editorStatus.className = 'editor-status error';
+        showToast(t('saveFailed'), 'error');
+      }
+    });
+
+    socket.on('files:mkdir-result', (result) => {
+      if (result.success) { showToast(t('folderCreated')); navigateTo(currentPath); }
+      else showToast(t('error') + ': ' + result.error, 'error');
+    });
+
+    socket.on('files:delete-result', (result) => {
+      if (result.success) { showToast(t('deleted')); navigateTo(currentPath); }
+      else showToast(t('error') + ': ' + result.error, 'error');
+    });
+
+    socket.on('files:rename-result', (result) => {
+      if (result.success) { showToast(t('renamed')); navigateTo(currentPath); }
+      else showToast(t('error') + ': ' + result.error, 'error');
+    });
+
+    // Toolbar buttons
+    $('btn-refresh').addEventListener('click', () => navigateTo(currentPath));
+    $('btn-new-folder').addEventListener('click', () => {
+      const name = prompt(t('folderName'));
+      if (name) socket.emit('files:mkdir', currentPath === '/' ? '/' + name : currentPath + '/' + name);
+    });
+    $('btn-upload').addEventListener('click', () => uploadZone.classList.toggle('visible'));
+
+    // Editor buttons
+    $('btn-save').addEventListener('click', saveFile);
+    $('btn-close-editor').addEventListener('click', closeEditor);
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 's' && editorModal.classList.contains('visible')) {
+        e.preventDefault();
+        saveFile();
+      }
+      if (e.key === 'Escape' && editorModal.classList.contains('visible')) {
+        closeEditor();
+      }
+    });
+
+    // Upload zone
+    uploadZone.addEventListener('click', (e) => {
+      if (e.target === uploadZone || e.target.closest('.upload-content')) fileInput.click();
+    });
+
+    uploadZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadZone.classList.add('dragover');
+    });
+
+    uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+
+    uploadZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadZone.classList.remove('dragover');
+      handleFileUpload(e.dataTransfer.files);
+    });
+
+    fileInput.addEventListener('change', () => {
+      handleFileUpload(fileInput.files);
+      fileInput.value = '';
+    });
+
+    async function handleFileUpload(files) {
+      const uploadProgress = $('upload-progress');
+      const uploadProgressFill = $('upload-progress-fill');
+      const uploadProgressText = $('upload-progress-text');
+
+      uploadProgress.classList.add('visible');
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        uploadProgressText.textContent = t('uploading') + ` ${file.name}...`;
+        uploadProgressFill.style.width = '10%';
+
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('targetDir', currentPath);
+
+        try {
+          const response = await fetch('/api/files/upload', { method: 'POST', body: formData });
+          const result = await response.json();
+
+          if (result.success) {
+            uploadProgressFill.style.width = '100%';
+            showToast(t('uploaded') + `: ${file.name}`);
+          } else {
+            showToast(t('uploadFailed') + `: ${result.error}`, 'error');
+          }
+        } catch (e) {
+          showToast(t('uploadError') + `: ${e.message}`, 'error');
+        }
+      }
+
+      setTimeout(() => {
+        uploadProgress.classList.remove('visible');
+        uploadZone.classList.remove('visible');
+        navigateTo(currentPath);
+      }, 500);
+    }
+
+    // Load files when Files tab is clicked
+    document.querySelector('[data-tab="files"]').addEventListener('click', () => {
+      if (fileListBody.textContent.includes('Loading')) navigateTo('/');
+    });
+
+    // Initialize language on page load
+    document.body.setAttribute('data-lang', currentLang);
+    document.getElementById('lang-select').value = currentLang;
+    updateAllTranslations();
 
     socket.emit('check-files');
   </script>
