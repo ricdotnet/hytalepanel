@@ -1,0 +1,116 @@
+name: PR Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  auto-review:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v44
+        with:
+          files: |
+            panel/**
+            *.yml
+            Dockerfile
+      
+      - name: Check file sizes
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: |
+          echo "## 📁 Changed Files Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            if [ -f "$file" ]; then
+              lines=$(wc -l < "$file")
+              echo "- \`$file\`: $lines lines" >> $GITHUB_STEP_SUMMARY
+              if [ $lines -gt 500 ]; then
+                echo "  ⚠️ Large file!" >> $GITHUB_STEP_SUMMARY
+              fi
+            fi
+          done
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install dependencies
+        working-directory: panel
+        run: npm ci
+      
+      - name: Syntax check
+        working-directory: panel
+        run: |
+          echo "## 🔍 Syntax Check" >> $GITHUB_STEP_SUMMARY
+          if node --check src/server.js 2>&1; then
+            echo "✅ No syntax errors found" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Syntax errors detected" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+      
+      - name: Add review comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            
+            // Get changed files
+            const changedFiles = `${{ steps.changed-files.outputs.all_changed_files }}`.split(' ').filter(f => f);
+            
+            // Categorize changes
+            const categories = {
+              backend: changedFiles.filter(f => f.startsWith('panel/src/')),
+              frontend: changedFiles.filter(f => f.startsWith('panel/public/')),
+              docker: changedFiles.filter(f => f.includes('Dockerfile') || f.includes('docker-compose')),
+              config: changedFiles.filter(f => f.endsWith('.yml') || f.endsWith('.json') || f.endsWith('.env'))
+            };
+            
+            let body = '## 🤖 Automated PR Review\n\n';
+            
+            if (categories.backend.length > 0) {
+              body += '### Backend Changes\n';
+              categories.backend.forEach(f => body += `- \`${f}\`\n`);
+              body += '\n⚠️ **Review checklist:**\n';
+              body += '- [ ] Error handling is consistent\n';
+              body += '- [ ] Auth middleware applied where needed\n';
+              body += '- [ ] No hardcoded secrets\n\n';
+            }
+            
+            if (categories.frontend.length > 0) {
+              body += '### Frontend Changes\n';
+              categories.frontend.forEach(f => body += `- \`${f}\`\n`);
+              body += '\n⚠️ **Review checklist:**\n';
+              body += '- [ ] Translations updated (i18n.js)\n';
+              body += '- [ ] UI matches existing style\n\n';
+            }
+            
+            if (categories.docker.length > 0) {
+              body += '### Docker Changes\n';
+              categories.docker.forEach(f => body += `- \`${f}\`\n`);
+              body += '\n⚠️ **Review checklist:**\n';
+              body += '- [ ] .env.example updated if new vars\n';
+              body += '- [ ] Both compose files updated\n\n';
+            }
+            
+            body += '---\n';
+            body += '*This is an automated review. A human should verify the changes.*';
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
