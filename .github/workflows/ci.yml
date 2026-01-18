@@ -22,7 +22,7 @@ jobs:
       
       - name: Install dependencies
         working-directory: panel
-        run: npm ci
+        run: npm install --production
       
       - name: Check syntax errors
         working-directory: panel

@@ -48,7 +48,7 @@ jobs:
       
       - name: Install dependencies
         working-directory: panel
-        run: npm ci
+        run: npm install
       
       - name: Syntax check
         working-directory: panel
