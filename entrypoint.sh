@@ -18,16 +18,18 @@ fi
 chown -R hytale:hytale "$SERVER_HOME"
 
 DOWNLOAD_FLAG="$SERVER_HOME/.download_attempted"
+ARCH=$(uname -m)
 
 # Check if files exist
 if [ ! -f "HytaleServer.jar" ] || [ ! -f "Assets.zip" ]; then
     
-    # Only attempt download once
+    # Only attempt download once (skip on ARM64 - downloader is x64 only)
     if [ ! -f "$DOWNLOAD_FLAG" ] && [ "$AUTO_DOWNLOAD" = "true" ]; then
-        touch "$DOWNLOAD_FLAG"
-        echo "[HYTALE] Server files not found. Attempting download..."
-        
-        if command -v hytale-downloader &> /dev/null; then
+        if [ "$ARCH" = "aarch64" ] || [ "$ARCH" = "arm64" ]; then
+            echo "[HYTALE] Auto-download not available on ARM64. Please copy server files manually."
+        elif command -v hytale-downloader &> /dev/null; then
+            touch "$DOWNLOAD_FLAG"
+            echo "[HYTALE] Server files not found. Attempting download..."
             hytale-downloader --download-path /tmp/hytale-game.zip 2>&1 || true
             
             if [ -f "/tmp/hytale-game.zip" ]; then
@@ -90,9 +92,6 @@ fi
 
 # Server args
 SERVER_ARGS="--assets Assets.zip --bind ${BIND_ADDR}:${BIND_PORT}"
-[ -n "$VIEW_DISTANCE" ] && SERVER_ARGS="$SERVER_ARGS --view-distance $VIEW_DISTANCE"
-[ -n "$MAX_PLAYERS" ] && SERVER_ARGS="$SERVER_ARGS --max-players $MAX_PLAYERS"
-[ -n "$SERVER_NAME" ] && SERVER_ARGS="$SERVER_ARGS --name $SERVER_NAME"
 [ -n "$SERVER_EXTRA_ARGS" ] && SERVER_ARGS="$SERVER_ARGS $SERVER_EXTRA_ARGS"
 
 # Command pipe for web panel
