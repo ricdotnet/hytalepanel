@@ -9,23 +9,26 @@ const ConsoleManager = {
   },
 
   bindControls() {
+    const self = this;
     const filter = $('console-filter');
     const clearBtn = $('console-clear');
 
     if (filter) {
-      filter.addEventListener('change', () => {
-        this.maxLines = parseInt(filter.value, 10);
-        this.trimLines();
+      filter.addEventListener('change', function() {
+        self.maxLines = parseInt(this.value, 10);
+        self.trimLines();
       });
     }
 
     if (clearBtn) {
-      clearBtn.addEventListener('click', () => this.clear());
+      clearBtn.addEventListener('click', function() {
+        self.clear();
+      });
     }
   },
 
   trimLines() {
-    while (this.el.children.length > this.maxLines) {
+    while (this.el && this.el.children.length > this.maxLines) {
       this.el.removeChild(this.el.firstChild);
     }
   },
