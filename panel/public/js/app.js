@@ -34,6 +34,7 @@ const App = {
 
     ConsoleManager.init('console');
     FileManager.init(this.socket);
+    ModManager.init(this.socket);
 
     this.socket.emit('check-files');
   },
@@ -106,6 +107,35 @@ const App = {
 
     // Language selector
     $('lang-select').addEventListener('change', e => setLanguage(e.target.value));
+
+    // Expand panel button
+    $('btn-expand-panel').addEventListener('click', () => {
+      document.body.classList.toggle('panel-expanded');
+      $('btn-expand-panel').textContent = document.body.classList.contains('panel-expanded') ? '✕' : '⤢';
+    });
+
+    // Hide sidebar button
+    $('btn-hide-sidebar').addEventListener('click', () => {
+      document.body.classList.add('sidebar-hidden');
+    });
+
+    // Show sidebar button
+    $('btn-show-sidebar').addEventListener('click', () => {
+      document.body.classList.remove('sidebar-hidden');
+    });
+
+    // Close expanded panel on Escape
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        if (document.body.classList.contains('panel-expanded')) {
+          document.body.classList.remove('panel-expanded');
+          $('btn-expand-panel').textContent = '⤢';
+        }
+        if (document.body.classList.contains('sidebar-hidden')) {
+          document.body.classList.remove('sidebar-hidden');
+        }
+      }
+    });
   },
 
   bindSocketHandlers() {
@@ -300,6 +330,9 @@ const App = {
   },
 
   updateAllTranslations() {
+    // Translate elements with data-i18n attributes
+    translateDataAttributes();
+
     const el = this.elements;
 
     // Header
@@ -317,6 +350,7 @@ const App = {
     // Tabs
     document.querySelector('[data-tab="setup"]').textContent = t('setup');
     document.querySelector('[data-tab="files"]').textContent = t('files');
+    document.querySelector('[data-tab="mods"]').textContent = t('mods');
     document.querySelector('[data-tab="commands"]').textContent = t('commands');
     document.querySelector('[data-tab="control"]').textContent = t('control');
 
@@ -367,6 +401,15 @@ const App = {
     document.querySelector('.upload-hint').textContent = t('uploadHint');
     document.querySelector('.file-col-name').textContent = t('name');
     document.querySelector('.file-col-size').textContent = t('size');
+
+    // Mods tab - select options need manual translation
+    const classificationFilter = $('mods-classification-filter');
+    if (classificationFilter) {
+      classificationFilter.querySelectorAll('option').forEach(opt => {
+        const key = opt.dataset.i18n;
+        if (key) opt.textContent = t(key);
+      });
+    }
 
     // Editor
     const editorBackup = $('editor-backup');

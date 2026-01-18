@@ -24,12 +24,20 @@ module.exports = {
     basePath: "/opt/hytale",
     maxUploadSize: 100 * 1024 * 1024,
     editableExtensions: [
-      ".json", ".yaml", ".yml", ".properties", 
+      ".json", ".yaml", ".yml", ".properties",
       ".txt", ".cfg", ".conf", ".xml", ".toml", ".ini"
     ],
     uploadAllowedExtensions: [
       ".jar", ".zip", ".json", ".yaml", ".yml", ".properties",
       ".txt", ".cfg", ".conf", ".xml", ".toml", ".ini", ".png", ".jpg"
     ]
+  },
+  mods: {
+    basePath: "/opt/hytale/mods",
+    metadataFile: "/opt/hytale/mods.json",
+    maxModSize: 50 * 1024 * 1024
+  },
+  modtale: {
+    apiKey: process.env.MODTALE_API_KEY || null
   }
 };
