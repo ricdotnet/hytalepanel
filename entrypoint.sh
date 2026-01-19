@@ -2,16 +2,19 @@
 
 cd "$SERVER_HOME"
 
-# Generate machine-id if not exists (needed for encrypted credential storage)
-if [ ! -f /etc/machine-id ]; then
-    cat /proc/sys/kernel/random/uuid | tr -d '-' > /etc/machine-id
-fi
-
-# Also create a persistent machine-id in server folder
-if [ ! -f "$SERVER_HOME/.machine-id" ]; then
-    cat /etc/machine-id > "$SERVER_HOME/.machine-id"
-else
+# Machine-id handling (needed for encrypted credential storage)
+# Some systems (ZimaOS, CasaOS) create an empty /etc/machine-id
+# We persist it in server folder to survive container restarts
+if [ -f "$SERVER_HOME/.machine-id" ] && [ -s "$SERVER_HOME/.machine-id" ]; then
+    # Restore from persistent copy
     cat "$SERVER_HOME/.machine-id" > /etc/machine-id
+elif [ ! -s /etc/machine-id ]; then
+    # Generate new if missing or empty
+    cat /proc/sys/kernel/random/uuid | tr -d '-' > /etc/machine-id
+    cp /etc/machine-id "$SERVER_HOME/.machine-id"
+else
+    # First run with valid machine-id, persist it
+    cp /etc/machine-id "$SERVER_HOME/.machine-id"
 fi
 
 # Fix permissions on mounted volumes (runs as root)
