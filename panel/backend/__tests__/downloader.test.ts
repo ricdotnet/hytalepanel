@@ -1,36 +1,37 @@
+import { jest, describe, test, expect, beforeEach } from '@jest/globals';
 import type { Socket } from 'socket.io';
 import type { Container } from 'dockerode';
 
-const mockExec = { start: jest.fn() };
+const mockExec = { start: jest.fn<() => Promise<unknown>>() };
 const mockContainer = { exec: jest.fn(() => Promise.resolve(mockExec)) } as unknown as Container;
 
-jest.mock('../src/services/docker.js', () => ({
-  getContainer: jest.fn(),
-  execCommand: jest.fn()
+const mockGetContainer = jest.fn<() => Promise<Container | null>>();
+const mockExecCommand = jest.fn<(cmd: string, timeout?: number) => Promise<string>>();
+const mockCheckServerFiles = jest.fn<() => Promise<{ hasJar: boolean; hasAssets: boolean; ready: boolean }>>();
+const mockCheckAuth = jest.fn<() => Promise<boolean>>();
+
+jest.unstable_mockModule('../src/services/docker.js', () => ({
+  getContainer: mockGetContainer,
+  execCommand: mockExecCommand
 }));
 
-jest.mock('../src/services/files.js', () => ({
-  checkServerFiles: jest.fn(),
-  checkAuth: jest.fn()
+jest.unstable_mockModule('../src/services/files.js', () => ({
+  checkServerFiles: mockCheckServerFiles,
+  checkAuth: mockCheckAuth
 }));
 
-import * as docker from '../src/services/docker.js';
-import * as files from '../src/services/files.js';
-import { downloadServerFiles } from '../src/services/downloader.js';
-
-const mockDocker = docker as jest.Mocked<typeof docker>;
-const mockFiles = files as jest.Mocked<typeof files>;
+const { downloadServerFiles } = await import('../src/services/downloader.js');
 
 describe('Downloader Service', () => {
-  let mockSocket: { emit: jest.Mock };
+  let mockSocket: { emit: ReturnType<typeof jest.fn> };
 
   beforeEach(() => {
     jest.clearAllMocks();
     mockSocket = { emit: jest.fn() };
-    mockDocker.getContainer.mockResolvedValue(mockContainer);
-    mockDocker.execCommand.mockResolvedValue('');
-    mockFiles.checkServerFiles.mockResolvedValue({ hasJar: false, hasAssets: false, ready: false });
-    mockFiles.checkAuth.mockResolvedValue(false);
+    mockGetContainer.mockResolvedValue(mockContainer);
+    mockExecCommand.mockResolvedValue('');
+    mockCheckServerFiles.mockResolvedValue({ hasJar: false, hasAssets: false, ready: false });
+    mockCheckAuth.mockResolvedValue(false);
   });
 
   const createMockStream = (dataToEmit: string | null, triggerError = false) => ({
@@ -43,7 +44,7 @@ describe('Downloader Service', () => {
   });
 
   test('emits error when container not found', async () => {
-    mockDocker.getContainer.mockResolvedValue(null);
+    mockGetContainer.mockResolvedValue(null);
     await downloadServerFiles(mockSocket as unknown as Socket);
     expect(mockSocket.emit).toHaveBeenCalledWith('download-status', {
       status: 'error',
@@ -53,7 +54,7 @@ describe('Downloader Service', () => {
 
   test('emits starting status on begin', async () => {
     mockExec.start.mockResolvedValue(createMockStream(null));
-    mockDocker.execCommand.mockResolvedValue('NO_ZIP');
+    mockExecCommand.mockResolvedValue('NO_ZIP');
 
     await downloadServerFiles(mockSocket as unknown as Socket);
 
@@ -65,7 +66,7 @@ describe('Downloader Service', () => {
 
   test('emits auth-required when OAuth URL or user_code detected', async () => {
     mockExec.start.mockResolvedValue(createMockStream('Visit oauth.accounts.hytale.com'));
-    mockDocker.execCommand.mockResolvedValue('NO_ZIP');
+    mockExecCommand.mockResolvedValue('NO_ZIP');
 
     await downloadServerFiles(mockSocket as unknown as Socket);
 
@@ -77,7 +78,7 @@ describe('Downloader Service', () => {
 
   test('emits error on 403 Forbidden', async () => {
     mockExec.start.mockResolvedValue(createMockStream('403 Forbidden'));
-    mockDocker.execCommand.mockResolvedValue('NO_ZIP');
+    mockExecCommand.mockResolvedValue('NO_ZIP');
 
     await downloadServerFiles(mockSocket as unknown as Socket);
 
@@ -89,12 +90,12 @@ describe('Downloader Service', () => {
 
   test('extracts files when zip found', async () => {
     mockExec.start.mockResolvedValue(createMockStream(null));
-    mockDocker.execCommand.mockImplementation((cmd: string) =>
+    mockExecCommand.mockImplementation((cmd: string) =>
       cmd.includes('ls /tmp/hytale-game.zip')
         ? Promise.resolve('/tmp/hytale-game.zip')
         : Promise.resolve('')
     );
-    mockFiles.checkServerFiles.mockResolvedValue({ hasJar: true, hasAssets: true, ready: true });
+    mockCheckServerFiles.mockResolvedValue({ hasJar: true, hasAssets: true, ready: true });
 
     await downloadServerFiles(mockSocket as unknown as Socket);
     await new Promise(r => setTimeout(r, 50));

@@ -1,5 +1,5 @@
+import { jest } from '@jest/globals';
 import type { Request, Response, NextFunction } from 'express';
-import type { Socket } from 'socket.io';
 import {
   verifyToken,
   generateToken,
@@ -28,9 +28,9 @@ describe('Auth Middleware', () => {
 
   describe('getToken', () => {
     test('extracts from cookie, header, or returns null', () => {
-      expect(getToken({ cookies: { token: 'cookie-token' }, headers: {} } as Request)).toBe('cookie-token');
+      expect(getToken({ cookies: { token: 'cookie-token' }, headers: {} } as unknown as Request)).toBe('cookie-token');
       expect(getToken({ cookies: {}, headers: { authorization: 'Bearer header-token' } } as unknown as Request)).toBe('header-token');
-      expect(getToken({ cookies: {}, headers: {} } as Request)).toBeNull();
+      expect(getToken({ cookies: {}, headers: {} } as unknown as Request)).toBeNull();
       expect(getToken({ cookies: {}, headers: { authorization: 'Basic xyz' } } as unknown as Request)).toBeNull();
     });
 
@@ -53,7 +53,7 @@ describe('Auth Middleware', () => {
       const res = mockRes();
       const next = jest.fn() as NextFunction;
 
-      requireAuth({ cookies: {}, headers: {} } as AuthenticatedRequest, res, next);
+      requireAuth({ cookies: {}, headers: {} } as unknown as AuthenticatedRequest, res, next);
       expect(res.status).toHaveBeenCalledWith(401);
       expect(next).not.toHaveBeenCalled();
 

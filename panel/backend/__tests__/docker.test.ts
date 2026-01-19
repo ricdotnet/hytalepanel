@@ -1,11 +1,15 @@
-import type { Container } from 'dockerode';
+import { jest, describe, test, expect, beforeEach } from '@jest/globals';
+import type Dockerode from 'dockerode';
+
+type ContainerInspectInfo = Awaited<ReturnType<Dockerode.Container['inspect']>>;
+type ExecResult = Awaited<ReturnType<Dockerode.Container['exec']>>;
 
 const mockContainer = {
-  inspect: jest.fn(),
-  exec: jest.fn(),
-  restart: jest.fn(),
-  stop: jest.fn(),
-  start: jest.fn(),
+  inspect: jest.fn<() => Promise<ContainerInspectInfo>>(),
+  exec: jest.fn<() => Promise<ExecResult>>(),
+  restart: jest.fn<() => Promise<void>>(),
+  stop: jest.fn<() => Promise<void>>(),
+  start: jest.fn<() => Promise<void>>(),
   logs: jest.fn(),
   getArchive: jest.fn(),
   putArchive: jest.fn()
@@ -15,12 +19,16 @@ const mockDocker = {
   getContainer: jest.fn(() => mockContainer)
 };
 
-jest.mock('dockerode', () => jest.fn(() => mockDocker));
+jest.unstable_mockModule('dockerode', () => ({
+  default: jest.fn(() => mockDocker)
+}));
 
-import * as docker from '../src/services/docker.js';
+const docker = await import('../src/services/docker.js');
 
 describe('Docker Service', () => {
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
 
   describe('getStatus', () => {
     test('returns running status with health', async () => {
@@ -31,7 +39,7 @@ describe('Docker Service', () => {
           StartedAt: '2024-01-01T00:00:00Z',
           Health: { Status: 'healthy' }
         }
-      });
+      } as ContainerInspectInfo);
 
       const status = await docker.getStatus();
       expect(status.running).toBe(true);
@@ -49,7 +57,7 @@ describe('Docker Service', () => {
     test('handles missing health status', async () => {
       mockContainer.inspect.mockResolvedValue({
         State: { Running: true, Status: 'running', StartedAt: '2024-01-01T00:00:00Z' }
-      });
+      } as ContainerInspectInfo);
       const status = await docker.getStatus();
       expect(status.health).toBe('unknown');
     });
@@ -68,8 +76,8 @@ describe('Docker Service', () => {
       };
 
       mockContainer.exec.mockResolvedValue({
-        start: jest.fn().mockResolvedValue(mockStream)
-      });
+        start: () => Promise.resolve(mockStream)
+      } as unknown as ExecResult);
 
       const output = await docker.execCommand('echo test');
       expect(output).toContain('test output');
@@ -84,8 +92,8 @@ describe('Docker Service', () => {
       };
 
       mockContainer.exec.mockResolvedValue({
-        start: jest.fn().mockResolvedValue(mockStream)
-      });
+        start: () => Promise.resolve(mockStream)
+      } as unknown as ExecResult);
 
       await expect(docker.execCommand('test')).rejects.toThrow('Stream error');
     });
@@ -100,8 +108,8 @@ describe('Docker Service', () => {
         })
       };
       mockContainer.exec.mockResolvedValue({
-        start: jest.fn().mockResolvedValue(mockStream)
-      });
+        start: () => Promise.resolve(mockStream)
+      } as unknown as ExecResult);
       expect((await docker.sendCommand('test')).success).toBe(true);
 
       mockContainer.exec.mockRejectedValue(new Error('Send failed'));

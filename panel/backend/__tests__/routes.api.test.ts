@@ -1,18 +1,30 @@
-import express from 'express';
-import request from 'supertest';
-import cookieParser from 'cookie-parser';
+import { jest, describe, test, expect, beforeEach } from '@jest/globals';
 import { Readable } from 'node:stream';
-import { generateToken } from '../src/middleware/auth.js';
 
-jest.mock('../src/services/files.js', () => ({
-  upload: jest.fn(),
-  download: jest.fn()
+interface UploadResult {
+  success: boolean;
+  fileName?: string;
+}
+
+interface DownloadResult {
+  success: boolean;
+  fileName?: string;
+  stream?: Readable;
+}
+
+const mockUpload = jest.fn<(dir: string, name: string, data: Buffer) => Promise<UploadResult>>();
+const mockDownload = jest.fn<(path: string) => Promise<DownloadResult>>();
+
+jest.unstable_mockModule('../src/services/files.js', () => ({
+  upload: mockUpload,
+  download: mockDownload
 }));
 
-import * as files from '../src/services/files.js';
-import apiRoutes from '../src/routes/api.js';
-
-const mockFiles = files as jest.Mocked<typeof files>;
+const express = (await import('express')).default;
+const request = (await import('supertest')).default;
+const cookieParser = (await import('cookie-parser')).default;
+const { generateToken } = await import('../src/middleware/auth.js');
+const apiRoutes = (await import('../src/routes/api.js')).default;
 
 const app = express();
 app.use(express.json());
@@ -22,7 +34,9 @@ app.use('/api', apiRoutes);
 describe('API Routes', () => {
   const validToken = generateToken('admin');
 
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
 
   describe('Authentication required', () => {
     test('returns 401 without token', async () => {
@@ -41,7 +55,7 @@ describe('API Routes', () => {
     });
 
     test('uploads file successfully', async () => {
-      mockFiles.upload.mockResolvedValue({ success: true, fileName: 'test.txt' });
+      mockUpload.mockResolvedValue({ success: true, fileName: 'test.txt' });
 
       const res = await request(app)
         .post('/api/files/upload')
@@ -50,11 +64,11 @@ describe('API Routes', () => {
         .field('targetDir', '/config');
 
       expect(res.status).toBe(200);
-      expect(mockFiles.upload).toHaveBeenCalledWith('/config', 'test.txt', expect.any(Buffer));
+      expect(mockUpload).toHaveBeenCalledWith('/config', 'test.txt', expect.any(Buffer));
     });
 
     test('handles upload error', async () => {
-      mockFiles.upload.mockRejectedValue(new Error('Upload failed'));
+      mockUpload.mockRejectedValue(new Error('Upload failed'));
 
       const res = await request(app)
         .post('/api/files/upload')
@@ -74,7 +88,7 @@ describe('API Routes', () => {
     });
 
     test('downloads file successfully', async () => {
-      mockFiles.download.mockResolvedValue({
+      mockDownload.mockResolvedValue({
         success: true,
         fileName: 'test',
         stream: new Readable({
@@ -95,7 +109,7 @@ describe('API Routes', () => {
     });
 
     test('returns 404 when file not found', async () => {
-      mockFiles.download.mockResolvedValue({ success: false });
+      mockDownload.mockResolvedValue({ success: false });
 
       const res = await request(app)
         .get('/api/files/download')

@@ -73,7 +73,7 @@ jobs:
 
       - name: Run tests
         working-directory: panel/backend
-        run: pnpm test -- --ci
+        run: pnpm test:ci
 
   build:
     runs-on: ubuntu-latest

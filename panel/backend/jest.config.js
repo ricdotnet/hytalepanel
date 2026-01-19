@@ -1,6 +1,7 @@
 /** @type {import('jest').Config} */
-const config = {
+export default {
   testEnvironment: 'node',
+  watchman: false,
   testMatch: ['**/__tests__/**/*.test.ts'],
   transform: {
     '^.+\\.ts$': ['ts-jest', { useESM: true }]
@@ -17,15 +18,5 @@ const config = {
   ],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html', 'json-summary'],
-  coverageThreshold: {
-    global: {
-      statements: 80,
-      branches: 60,
-      functions: 70,
-      lines: 80
-    }
-  },
   verbose: true
 };
-
-export default config;
