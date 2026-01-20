@@ -244,6 +244,12 @@ New-NetFirewallRule -DisplayName "Hytale" -Direction Inbound -Protocol UDP -Loca
 
 See [CONTRIBUTING.md](CONTRIBUTING.md)
 
+## Contributors
+
+Thanks to everyone who has helped improve this project:
+
+- **[@Vadko](https://github.com/Vadko)** - Frontend refactoring and mods system
+
 ## License
 
 **Free for personal and non-commercial use.**
