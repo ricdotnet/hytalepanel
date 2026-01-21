@@ -154,10 +154,12 @@
   "linuxNative": "Linux Nativo",
   "machineIdHint": "Montar volumenes machine-id (solo Linux, deshabilitar para CasaOS/Windows)",
   "config": "Config",
-  "dockerCompose": "Docker Compose",
-  "editCompose": "Editar docker-compose.yml",
-  "regenerateCompose": "Regenerar",
-  "composeSaved": "Docker Compose guardado",
-  "composeRegenerated": "Docker Compose regenerado",
+  "serverConfig": "Configuración del Servidor",
+  "bindAddress": "Dirección de Enlace",
+  "extraArgs": "Argumentos Extra",
+  "autoDownloadFiles": "Auto-descargar archivos del servidor",
+  "useG1GC": "Usar recolector de basura G1GC",
+  "configSaved": "Configuración guardada",
+  "configHint": "Reinicia el servidor para aplicar cambios",
   "stopServerToEdit": "Detén el servidor para editar configuración"
 }

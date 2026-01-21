@@ -87,9 +87,13 @@ export async function execCommand(cmd: string, timeout = 30000, containerName?: 
 
 export async function sendCommand(cmd: string, containerName?: string): Promise<CommandResult> {
   try {
-    await execCommand(`echo "${cmd}" > /tmp/hytale-console`, 30000, containerName);
+    // Write to the console pipe - the entrypoint.sh creates /tmp/hytale-console as a FIFO
+    // Use printf to avoid issues with special characters, and redirect in background to avoid blocking
+    const escapedCmd = cmd.replace(/"/g, '\\"').replace(/\$/g, '\\$');
+    await execCommand(`printf '%s\\n' "${escapedCmd}" > /tmp/hytale-console`, 5000, containerName);
     return { success: true };
   } catch (e) {
+    console.error('[Docker] sendCommand error:', (e as Error).message);
     return { success: false, error: (e as Error).message };
   }
 }
