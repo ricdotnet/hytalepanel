@@ -150,5 +150,14 @@
   "serverCreated": "Servidor creado",
   "enter": "Entrar",
   "delete": "Eliminar",
-  "serverOfflineFiles": "Inicia el servidor para gestionar archivos"
+  "serverOfflineFiles": "Inicia el servidor para gestionar archivos",
+  "linuxNative": "Linux Nativo",
+  "machineIdHint": "Montar volumenes machine-id (solo Linux, deshabilitar para CasaOS/Windows)",
+  "config": "Config",
+  "dockerCompose": "Docker Compose",
+  "editCompose": "Editar docker-compose.yml",
+  "regenerateCompose": "Regenerar",
+  "composeSaved": "Docker Compose guardado",
+  "composeRegenerated": "Docker Compose regenerado",
+  "stopServerToEdit": "Detén el servidor para editar configuración"
 }

@@ -93,9 +93,17 @@ export function setupSocketHandlers(io: Server): void {
 
     // Join a server room and set context
     socket.on('server:join', async (serverId: string) => {
-      // Leave previous room
+      // Leave previous room and cleanup
       if (ctx.serverId) {
         socket.leave(`server:${ctx.serverId}`);
+        if (logStream) {
+          try {
+            (logStream as NodeJS.ReadableStream & { destroy?: () => void }).destroy?.();
+          } catch {
+            /* ignore */
+          }
+          logStream = null;
+        }
       }
 
       const result = await servers.getServer(serverId);
@@ -108,19 +116,30 @@ export function setupSocketHandlers(io: Server): void {
       ctx.containerName = result.server.containerName;
       socket.join(`server:${serverId}`);
 
-      // Send initial data for this server
-      socket.emit('status', await docker.getStatus(ctx.containerName));
-      socket.emit('files', await files.checkServerFiles(ctx.containerName));
-      socket.emit('downloader-auth', await files.checkAuth(ctx.containerName));
+      // Check if server is running first
+      const status = await docker.getStatus(ctx.containerName);
+      socket.emit('status', status);
 
-      try {
-        const history = await docker.getLogsHistory(500, ctx.containerName);
-        socket.emit('logs:history', { logs: history, initial: true });
-      } catch (e) {
-        console.error('Failed to get log history:', (e as Error).message);
+      // Only check files/auth/logs if container is running
+      if (status.running) {
+        socket.emit('files', await files.checkServerFiles(ctx.containerName));
+        socket.emit('downloader-auth', await files.checkAuth(ctx.containerName));
+
+        try {
+          const history = await docker.getLogsHistory(500, ctx.containerName);
+          socket.emit('logs:history', { logs: history, initial: true });
+        } catch (e) {
+          console.error('Failed to get log history:', (e as Error).message);
+        }
+
+        await connectLogStream();
+      } else {
+        // Server is offline - send empty/default values
+        socket.emit('files', { hasJar: false, hasAssets: false, ready: false });
+        socket.emit('downloader-auth', false);
+        socket.emit('logs:history', { logs: [], initial: true });
       }
 
-      await connectLogStream();
       socket.emit('server:joined', { serverId, server: result.server });
     });
 
@@ -151,8 +170,8 @@ export function setupSocketHandlers(io: Server): void {
     });
 
     socket.on('download', async () => {
-      if (!ctx.containerName) return;
-      await downloader.downloadServerFiles(socket, ctx.containerName);
+      if (!ctx.containerName || !ctx.serverId) return;
+      await downloader.downloadServerFiles(socket, ctx.containerName, ctx.serverId);
     });
 
     socket.on('restart', async () => {
@@ -191,7 +210,14 @@ export function setupSocketHandlers(io: Server): void {
       if (result.success && ctx.containerName) {
         setTimeout(async () => {
           await connectLogStream(50);
-          socket.emit('status', await docker.getStatus(ctx.containerName!));
+          const status = await docker.getStatus(ctx.containerName!);
+          socket.emit('status', status);
+          
+          // Send files status now that server is running
+          if (status.running) {
+            socket.emit('files', await files.checkServerFiles(ctx.containerName!));
+            socket.emit('downloader-auth', await files.checkAuth(ctx.containerName!));
+          }
         }, 2000);
       }
     });

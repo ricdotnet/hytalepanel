@@ -7,6 +7,7 @@ export interface ServerConfig {
   autoDownload: boolean;
   useG1gc: boolean;
   extraArgs: string;
+  useMachineId: boolean;
 }
 
 export interface Server {

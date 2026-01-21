@@ -13,6 +13,7 @@ export interface ServerConfig {
   autoDownload: boolean;
   useG1gc: boolean;
   extraArgs: string;
+  useMachineId: boolean; // Linux only - for CasaOS/Windows set to false
 }
 
 export interface Server {
@@ -52,7 +53,8 @@ const DEFAULT_CONFIG: ServerConfig = {
   bindAddr: '0.0.0.0',
   autoDownload: true,
   useG1gc: true,
-  extraArgs: ''
+  extraArgs: '',
+  useMachineId: false // Default false for compatibility (CasaOS/Windows)
 };
 
 async function ensureDataDir(): Promise<void> {
@@ -76,6 +78,12 @@ async function saveServersData(data: ServersData): Promise<void> {
 }
 
 function generateDockerCompose(server: Server): string {
+  const machineIdVolumes = server.config.useMachineId
+    ? `      - /etc/machine-id:/etc/machine-id:ro
+      - /sys/class/dmi/id:/sys/class/dmi/id:ro
+`
+    : '';
+
   return `services:
   ${server.containerName}:
     image: ketbom/hytale-server:latest
@@ -97,9 +105,7 @@ function generateDockerCompose(server: Server): string {
       SERVER_EXTRA_ARGS: "${server.config.extraArgs}"
     volumes:
       - ./server:/opt/hytale
-      - /etc/machine-id:/etc/machine-id:ro
-      - /sys/class/dmi/id:/sys/class/dmi/id:ro
-`;
+${machineIdVolumes}`;
 }
 
 function generateContainerName(id: string): string {
@@ -323,4 +329,48 @@ export function getServerDataPath(id: string): string {
 
 export function getServerModsPath(id: string): string {
   return path.join(SERVERS_DIR, id, 'server', 'mods');
+}
+
+// Docker Compose management
+export interface ComposeResult extends OperationResult {
+  content?: string;
+}
+
+export async function getServerCompose(id: string): Promise<ComposeResult> {
+  try {
+    const serverDir = path.join(SERVERS_DIR, id);
+    const composePath = path.join(serverDir, 'docker-compose.yml');
+    const content = await fs.readFile(composePath, 'utf-8');
+    return { success: true, content };
+  } catch (e) {
+    return { success: false, error: (e as Error).message };
+  }
+}
+
+export async function saveServerCompose(id: string, content: string): Promise<OperationResult> {
+  try {
+    const serverDir = path.join(SERVERS_DIR, id);
+    const composePath = path.join(serverDir, 'docker-compose.yml');
+    await fs.writeFile(composePath, content);
+    return { success: true };
+  } catch (e) {
+    return { success: false, error: (e as Error).message };
+  }
+}
+
+export async function regenerateServerCompose(id: string): Promise<ComposeResult> {
+  try {
+    const result = await getServer(id);
+    if (!result.success || !result.server) {
+      return { success: false, error: result.error || 'Server not found' };
+    }
+
+    const compose = generateDockerCompose(result.server);
+    const serverDir = path.join(SERVERS_DIR, id);
+    await fs.writeFile(path.join(serverDir, 'docker-compose.yml'), compose);
+
+    return { success: true, content: compose };
+  } catch (e) {
+    return { success: false, error: (e as Error).message };
+  }
 }

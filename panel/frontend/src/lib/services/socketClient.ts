@@ -95,29 +95,37 @@ export function connectSocket(): Socket {
 
   // Server status
   socketInstance.on('status', (s: ServerStatus) => {
+    const wasRunning = get(serverStatus).running;
+    const isNowRunning = s.running;
+    
     serverStatus.set({
-      running: s.running,
+      running: isNowRunning,
       status: s.status || 'unknown',
       startedAt: s.startedAt
     });
+    
     // Also update in servers list
     const serverId = get(activeServerId);
     if (serverId) {
-      updateServerStatus(serverId, s.running ? 'running' : 'stopped');
+      updateServerStatus(serverId, isNowRunning ? 'running' : 'stopped');
+    }
+    
+    // Load files and mods when server becomes running (or on first status if running)
+    if (isNowRunning && !wasRunning) {
+      socketInstance?.emit('files:list', '/');
+      socketInstance?.emit('mods:list');
     }
   });
 
-  // Files check - load files and mods after receiving server status
+  // Files check - just update the state, don't auto-load files
   socketInstance.on('files', (f: FilesReady) => {
     filesReady.set({
       hasJar: f.hasJar,
       hasAssets: f.hasAssets,
       ready: f.ready
     });
-    // Load initial data
-    socketInstance?.emit('files:list', '/');
+    // Only check mods config - files will be loaded when status confirms server is running
     socketInstance?.emit('mods:check-config');
-    socketInstance?.emit('mods:list');
   });
 
   // Downloader auth status
@@ -369,7 +377,7 @@ export function emit(event: string, data?: unknown): void {
 
 export function joinServer(serverId: string): void {
   if (socketInstance) {
-    // Clear previous server data
+    // Clear ALL previous server data
     clearLogs();
     initialLoadDone.set(false);
     loadedCount.set(0);
@@ -379,6 +387,19 @@ export function joinServer(serverId: string): void {
     installedMods.set([]);
     fileList.set([]);
     currentPath.set('/');
+    downloaderAuth.set(false);
+    
+    // Reset download progress completely
+    stopDlTimer();
+    downloadProgress.set({
+      active: false,
+      status: '',
+      percentage: 0,
+      step: 'auth',
+      authUrl: null,
+      authCode: null,
+      time: '0s'
+    });
     
     socketInstance.emit('server:join', serverId);
     activeServerId.set(serverId);
@@ -393,7 +414,14 @@ export function leaveServer(): void {
   }
 }
 
-function handleDownloadStatus(d: DownloadStatusEvent): void {
+function handleDownloadStatus(d: DownloadStatusEvent & { serverId?: string }): void {
+  // Ignore events from other servers
+  const currentServerId = get(activeServerId);
+  if (d.serverId && d.serverId !== currentServerId) {
+    console.log('[Download] Ignoring event for different server:', d.serverId, 'current:', currentServerId);
+    return;
+  }
+  
   console.log('[Download] Status:', d.status, 'Message:', d.message);
   switch (d.status) {
     case 'starting':

@@ -5,16 +5,18 @@ import * as files from './files.js';
 export interface DownloadStatus {
   status: 'starting' | 'auth-required' | 'output' | 'error' | 'extracting' | 'complete' | 'done';
   message: string;
+  serverId?: string;
 }
 
-export async function downloadServerFiles(socket: Socket, containerName?: string): Promise<void> {
+export async function downloadServerFiles(socket: Socket, containerName?: string, serverId?: string): Promise<void> {
   try {
     const c = await docker.getContainer(containerName);
     if (!c) throw new Error('Container not found');
 
     socket.emit('download-status', {
       status: 'starting',
-      message: 'Starting download...'
+      message: 'Starting download...',
+      serverId
     } satisfies DownloadStatus);
 
     await docker.execCommand('rm -f /opt/hytale/.download_attempted', 30000, containerName);
@@ -45,14 +47,15 @@ export async function downloadServerFiles(socket: Socket, containerName?: string
         text.includes('user_code') ||
         text.includes('Authorization code')
       ) {
-        socket.emit('download-status', { status: 'auth-required', message: text });
+        socket.emit('download-status', { status: 'auth-required', message: text, serverId });
       } else if (text.includes('403') || text.includes('Forbidden')) {
         socket.emit('download-status', {
           status: 'error',
-          message: 'Authentication failed or expired. Try again.'
+          message: 'Authentication failed or expired. Try again.',
+          serverId
         });
       } else {
-        socket.emit('download-status', { status: 'output', message: text });
+        socket.emit('download-status', { status: 'output', message: text, serverId });
       }
     });
 
@@ -67,7 +70,8 @@ export async function downloadServerFiles(socket: Socket, containerName?: string
       if (!checkZip.includes('NO_ZIP')) {
         socket.emit('download-status', {
           status: 'extracting',
-          message: 'Extracting files...'
+          message: 'Extracting files...',
+          serverId
         });
 
         await docker.execCommand(
@@ -89,12 +93,14 @@ export async function downloadServerFiles(socket: Socket, containerName?: string
 
         socket.emit('download-status', {
           status: 'complete',
-          message: 'Download complete!'
+          message: 'Download complete!',
+          serverId
         });
       } else {
         socket.emit('download-status', {
           status: 'done',
-          message: 'Download finished. Check if authentication was completed.'
+          message: 'Download finished. Check if authentication was completed.',
+          serverId
         });
       }
 
@@ -104,10 +110,10 @@ export async function downloadServerFiles(socket: Socket, containerName?: string
 
     stream.on('error', (err: Error) => {
       console.error('Download stream error:', err);
-      socket.emit('download-status', { status: 'error', message: err.message });
+      socket.emit('download-status', { status: 'error', message: err.message, serverId });
     });
   } catch (e) {
     console.error('Download error:', e);
-    socket.emit('download-status', { status: 'error', message: (e as Error).message });
+    socket.emit('download-status', { status: 'error', message: (e as Error).message, serverId });
   }
 }

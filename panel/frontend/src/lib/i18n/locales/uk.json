@@ -150,5 +150,14 @@
   "serverCreated": "Сервер створено",
   "enter": "Увiйти",
   "delete": "Видалити",
-  "serverOfflineFiles": "Запустiть сервер для керування файлами"
+  "serverOfflineFiles": "Запустiть сервер для керування файлами",
+  "linuxNative": "Linux Native",
+  "machineIdHint": "Монтувати machine-id (тiльки Linux, вимкнiть для CasaOS/Windows)",
+  "config": "Config",
+  "dockerCompose": "Docker Compose",
+  "editCompose": "Редагувати docker-compose.yml",
+  "regenerateCompose": "Перегенерувати",
+  "composeSaved": "Docker Compose збережено",
+  "composeRegenerated": "Docker Compose перегенеровано",
+  "stopServerToEdit": "Зупинiть сервер для редагування"
 }

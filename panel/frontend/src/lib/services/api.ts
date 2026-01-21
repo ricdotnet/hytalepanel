@@ -134,3 +134,44 @@ export async function restartServer(id: string): Promise<OperationResponse> {
     return { success: false, error: (e as Error).message };
   }
 }
+
+// ==================== COMPOSE API ====================
+
+export interface ComposeResponse {
+  success: boolean;
+  content?: string;
+  error?: string;
+}
+
+export async function getServerCompose(id: string): Promise<ComposeResponse> {
+  try {
+    const response = await fetch(`/api/servers/${id}/compose`);
+    return await response.json();
+  } catch (e) {
+    return { success: false, error: (e as Error).message };
+  }
+}
+
+export async function saveServerCompose(id: string, content: string): Promise<OperationResponse> {
+  try {
+    const response = await fetch(`/api/servers/${id}/compose`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content })
+    });
+    return await response.json();
+  } catch (e) {
+    return { success: false, error: (e as Error).message };
+  }
+}
+
+export async function regenerateServerCompose(id: string): Promise<ComposeResponse> {
+  try {
+    const response = await fetch(`/api/servers/${id}/compose/regenerate`, {
+      method: 'POST'
+    });
+    return await response.json();
+  } catch (e) {
+    return { success: false, error: (e as Error).message };
+  }
+}

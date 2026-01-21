@@ -150,5 +150,14 @@
   "serverCreated": "Server created",
   "enter": "Enter",
   "delete": "Delete",
-  "serverOfflineFiles": "Start the server to manage files"
+  "serverOfflineFiles": "Start the server to manage files",
+  "linuxNative": "Linux Native",
+  "machineIdHint": "Mount machine-id volumes (Linux only, disable for CasaOS/Windows)",
+  "config": "Config",
+  "dockerCompose": "Docker Compose",
+  "editCompose": "Edit docker-compose.yml",
+  "regenerateCompose": "Regenerate",
+  "composeSaved": "Docker Compose saved",
+  "composeRegenerated": "Docker Compose regenerated",
+  "stopServerToEdit": "Stop server to edit configuration"
 }

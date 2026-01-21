@@ -147,6 +147,43 @@ router.post('/servers/:id/restart', async (req, res) => {
   }
 });
 
+// Docker Compose management
+router.get('/servers/:id/compose', async (req, res) => {
+  try {
+    const result = await servers.getServerCompose(req.params.id);
+    if (!result.success) {
+      res.status(404).json(result);
+      return;
+    }
+    res.json(result);
+  } catch (e) {
+    res.status(500).json({ success: false, error: (e as Error).message });
+  }
+});
+
+router.put('/servers/:id/compose', async (req, res) => {
+  try {
+    const { content } = req.body as { content: string };
+    if (!content) {
+      res.status(400).json({ success: false, error: 'Content is required' });
+      return;
+    }
+    const result = await servers.saveServerCompose(req.params.id, content);
+    res.json(result);
+  } catch (e) {
+    res.status(500).json({ success: false, error: (e as Error).message });
+  }
+});
+
+router.post('/servers/:id/compose/regenerate', async (req, res) => {
+  try {
+    const result = await servers.regenerateServerCompose(req.params.id);
+    res.json(result);
+  } catch (e) {
+    res.status(500).json({ success: false, error: (e as Error).message });
+  }
+});
+
 // ==================== FILES API ====================
 
 router.post('/files/upload', upload.single('file'), async (req, res) => {

@@ -13,6 +13,7 @@
   let javaXmx = $state('8G');
   let autoDownload = $state(true);
   let useG1gc = $state(true);
+  let useMachineId = $state(false); // For Linux native - disable for CasaOS/Windows
   let isCreating = $state(false);
   let showAdvanced = $state(false);
 
@@ -24,6 +25,11 @@
       port = maxPort + 1;
     }
   });
+
+  let machineIdVolumes = $derived(useMachineId 
+    ? `      - /etc/machine-id:/etc/machine-id:ro
+      - /sys/class/dmi/id:/sys/class/dmi/id:ro` 
+    : '');
 
   let dockerComposePreview = $derived(`services:
   hytale-server:
@@ -39,7 +45,7 @@
       AUTO_DOWNLOAD: ${autoDownload}
       USE_G1GC: ${useG1gc}
     volumes:
-      - ./server:/opt/hytale`);
+      - ./server:/opt/hytale${machineIdVolumes ? '\n' + machineIdVolumes : ''}`);
 
   async function handleSubmit(): Promise<void> {
     if (!name.trim()) {
@@ -58,7 +64,8 @@
         bindAddr: '0.0.0.0',
         autoDownload,
         useG1gc,
-        extraArgs: ''
+        extraArgs: '',
+        useMachineId
       }
     });
 
@@ -146,6 +153,10 @@
         <label class="checkbox-label">
           <input type="checkbox" bind:checked={useG1gc} />
           <span>Use G1GC</span>
+        </label>
+        <label class="checkbox-label" title={$_('machineIdHint')}>
+          <input type="checkbox" bind:checked={useMachineId} />
+          <span>{$_('linuxNative')}</span>
         </label>
       </div>
 
