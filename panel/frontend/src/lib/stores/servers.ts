@@ -32,3 +32,7 @@ export const activeServer = derived([servers, activeServerId], ([$servers, $acti
 export function updateServerStatus(id: string, status: 'running' | 'stopped' | 'unknown'): void {
   servers.update((list) => list.map((s) => (s.id === id ? { ...s, status } : s)));
 }
+
+export function updateServer(id: string, updates: Partial<Server>): void {
+  servers.update((list) => list.map((s) => (s.id === id ? { ...s, ...updates } : s)));
+}
