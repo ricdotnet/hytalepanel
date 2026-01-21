@@ -97,19 +97,19 @@ export function connectSocket(): Socket {
   socketInstance.on('status', (s: ServerStatus) => {
     const wasRunning = get(serverStatus).running;
     const isNowRunning = s.running;
-    
+
     serverStatus.set({
       running: isNowRunning,
       status: s.status || 'unknown',
       startedAt: s.startedAt
     });
-    
+
     // Also update in servers list
     const serverId = get(activeServerId);
     if (serverId) {
       updateServerStatus(serverId, isNowRunning ? 'running' : 'stopped');
     }
-    
+
     // Load files and mods when server becomes running (or on first status if running)
     if (isNowRunning && !wasRunning) {
       socketInstance?.emit('files:list', '/');
@@ -388,7 +388,7 @@ export function joinServer(serverId: string): void {
     fileList.set([]);
     currentPath.set('/');
     downloaderAuth.set(false);
-    
+
     // Reset download progress completely
     stopDlTimer();
     downloadProgress.set({
@@ -400,7 +400,7 @@ export function joinServer(serverId: string): void {
       authCode: null,
       time: '0s'
     });
-    
+
     socketInstance.emit('server:join', serverId);
     activeServerId.set(serverId);
   }
@@ -421,7 +421,7 @@ function handleDownloadStatus(d: DownloadStatusEvent & { serverId?: string }): v
     console.log('[Download] Ignoring event for different server:', d.serverId, 'current:', currentServerId);
     return;
   }
-  
+
   console.log('[Download] Status:', d.status, 'Message:', d.message);
   switch (d.status) {
     case 'starting':

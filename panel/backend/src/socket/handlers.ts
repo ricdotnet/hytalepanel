@@ -212,7 +212,7 @@ export function setupSocketHandlers(io: Server): void {
           await connectLogStream(50);
           const status = await docker.getStatus(ctx.containerName!);
           socket.emit('status', status);
-          
+
           // Send files status now that server is running
           if (status.running) {
             socket.emit('files', await files.checkServerFiles(ctx.containerName!));
