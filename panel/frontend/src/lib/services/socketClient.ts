@@ -24,6 +24,7 @@ import {
   total
 } from '$lib/stores/mods';
 import { downloadProgress, downloaderAuth, filesReady, serverStatus } from '$lib/stores/server';
+import { activeServerId, updateServerStatus } from '$lib/stores/servers';
 import { showToast } from '$lib/stores/ui';
 import type {
   ActionStatus,
@@ -49,6 +50,7 @@ import { get, writable } from 'svelte/store';
 
 export const socket = writable<Socket | null>(null);
 export const isConnected = writable<boolean>(false);
+export const joinedServerId = writable<string | null>(null);
 
 let socketInstance: Socket | null = null;
 let dlStartTime: number | null = null;
@@ -67,11 +69,11 @@ export function connectSocket(): Socket {
 
   socketInstance.on('connect', () => {
     isConnected.set(true);
-    socketInstance?.emit('check-files');
   });
 
   socketInstance.on('disconnect', () => {
     isConnected.set(false);
+    joinedServerId.set(null);
   });
 
   socketInstance.on('connect_error', (err: Error) => {
@@ -82,6 +84,15 @@ export function connectSocket(): Socket {
     }
   });
 
+  // Server join result
+  socketInstance.on('server:joined', ({ serverId }: { serverId: string }) => {
+    joinedServerId.set(serverId);
+  });
+
+  socketInstance.on('server:join-error', ({ error }: { error: string }) => {
+    showToast(`Error: ${error}`, 'error');
+  });
+
   // Server status
   socketInstance.on('status', (s: ServerStatus) => {
     serverStatus.set({
@@ -89,6 +100,11 @@ export function connectSocket(): Socket {
       status: s.status || 'unknown',
       startedAt: s.startedAt
     });
+    // Also update in servers list
+    const serverId = get(activeServerId);
+    if (serverId) {
+      updateServerStatus(serverId, s.running ? 'running' : 'stopped');
+    }
   });
 
   // Files check - load files and mods after receiving server status
@@ -342,11 +358,38 @@ export function disconnectSocket(): void {
   }
   socket.set(null);
   isConnected.set(false);
+  joinedServerId.set(null);
 }
 
 export function emit(event: string, data?: unknown): void {
   if (socketInstance) {
     socketInstance.emit(event, data);
+  }
+}
+
+export function joinServer(serverId: string): void {
+  if (socketInstance) {
+    // Clear previous server data
+    clearLogs();
+    initialLoadDone.set(false);
+    loadedCount.set(0);
+    hasMoreHistory.set(true);
+    filesReady.set({ hasJar: false, hasAssets: false, ready: false });
+    serverStatus.set({ running: false, status: 'offline', startedAt: null });
+    installedMods.set([]);
+    fileList.set([]);
+    currentPath.set('/');
+    
+    socketInstance.emit('server:join', serverId);
+    activeServerId.set(serverId);
+  }
+}
+
+export function leaveServer(): void {
+  if (socketInstance) {
+    socketInstance.emit('server:leave');
+    joinedServerId.set(null);
+    activeServerId.set(null);
   }
 }
 

@@ -2,8 +2,9 @@
   import { _ } from 'svelte-i18n';
   import { locale } from '$lib/i18n';
   import { serverStatus } from '$lib/stores/server';
+  import { activeServer, activeServerId } from '$lib/stores/servers';
   import { logout } from '$lib/stores/auth';
-  import { disconnectSocket } from '$lib/services/socketClient';
+  import { disconnectSocket, leaveServer } from '$lib/services/socketClient';
   import { formatUptime } from '$lib/utils/formatters';
   import StatusBadge from './ui/StatusBadge.svelte';
   import { onMount, onDestroy } from 'svelte';
@@ -42,6 +43,10 @@
     logout();
   }
 
+  function handleBackToPanel(): void {
+    leaveServer();
+  }
+
   function handleLangChange(e: Event): void {
     const target = e.target as HTMLSelectElement;
     locale.set(target.value);
@@ -50,10 +55,20 @@
 
 <header>
   <div class="logo">
+    {#if $activeServerId}
+      <button class="back-btn" onclick={handleBackToPanel} title={$_('backToPanel')}>
+        ←
+      </button>
+    {/if}
     <div class="logo-block">H</div>
     <div>
-      <h1>HYTALE</h1>
-      <div class="logo-subtitle">{$_('serverPanel')}</div>
+      {#if $activeServer}
+        <h1>{$activeServer.name}</h1>
+        <div class="logo-subtitle">:{$activeServer.port}/UDP</div>
+      {:else}
+        <h1>HYTALE</h1>
+        <div class="logo-subtitle">{$_('serverPanel')}</div>
+      {/if}
     </div>
   </div>
   <div class="header-right">

@@ -7,9 +7,9 @@ export interface DownloadStatus {
   message: string;
 }
 
-export async function downloadServerFiles(socket: Socket): Promise<void> {
+export async function downloadServerFiles(socket: Socket, containerName?: string): Promise<void> {
   try {
-    const c = await docker.getContainer();
+    const c = await docker.getContainer(containerName);
     if (!c) throw new Error('Container not found');
 
     socket.emit('download-status', {
@@ -17,7 +17,7 @@ export async function downloadServerFiles(socket: Socket): Promise<void> {
       message: 'Starting download...'
     } satisfies DownloadStatus);
 
-    await docker.execCommand('rm -f /opt/hytale/.download_attempted');
+    await docker.execCommand('rm -f /opt/hytale/.download_attempted', 30000, containerName);
 
     console.log('Starting hytale-downloader with streaming');
 
@@ -25,7 +25,7 @@ export async function downloadServerFiles(socket: Socket): Promise<void> {
     const downloadPath = '/opt/hytale/.download-temp';
     const zipPath = `${downloadPath}/hytale-game.zip`;
 
-    await docker.execCommand(`mkdir -p ${downloadPath}`);
+    await docker.execCommand(`mkdir -p ${downloadPath}`, 30000, containerName);
 
     const exec = await c.exec({
       Cmd: ['sh', '-c', `cd /opt/hytale && hytale-downloader -download-path ${zipPath} 2>&1`],
@@ -60,9 +60,9 @@ export async function downloadServerFiles(socket: Socket): Promise<void> {
       console.log('Download stream ended');
 
       // Sync filesystem to ensure file is visible
-      await docker.execCommand('sync');
+      await docker.execCommand('sync', 30000, containerName);
 
-      const checkZip = await docker.execCommand(`ls ${zipPath} 2>/dev/null || echo 'NO_ZIP'`);
+      const checkZip = await docker.execCommand(`ls ${zipPath} 2>/dev/null || echo 'NO_ZIP'`, 30000, containerName);
 
       if (!checkZip.includes('NO_ZIP')) {
         socket.emit('download-status', {
@@ -70,14 +70,22 @@ export async function downloadServerFiles(socket: Socket): Promise<void> {
           message: 'Extracting files...'
         });
 
-        await docker.execCommand(`unzip -o ${zipPath} -d ${downloadPath}/extract 2>/dev/null || true`);
         await docker.execCommand(
-          `find ${downloadPath}/extract -name 'HytaleServer.jar' -exec cp {} /opt/hytale/ \\; 2>/dev/null || true`
+          `unzip -o ${zipPath} -d ${downloadPath}/extract 2>/dev/null || true`,
+          60000,
+          containerName
         );
         await docker.execCommand(
-          `find ${downloadPath}/extract -name 'Assets.zip' -exec cp {} /opt/hytale/ \\; 2>/dev/null || true`
+          `find ${downloadPath}/extract -name 'HytaleServer.jar' -exec cp {} /opt/hytale/ \\; 2>/dev/null || true`,
+          30000,
+          containerName
         );
-        await docker.execCommand(`rm -rf ${downloadPath}`);
+        await docker.execCommand(
+          `find ${downloadPath}/extract -name 'Assets.zip' -exec cp {} /opt/hytale/ \\; 2>/dev/null || true`,
+          30000,
+          containerName
+        );
+        await docker.execCommand(`rm -rf ${downloadPath}`, 30000, containerName);
 
         socket.emit('download-status', {
           status: 'complete',
@@ -90,8 +98,8 @@ export async function downloadServerFiles(socket: Socket): Promise<void> {
         });
       }
 
-      socket.emit('files', await files.checkServerFiles());
-      socket.emit('downloader-auth', await files.checkAuth());
+      socket.emit('files', await files.checkServerFiles(containerName));
+      socket.emit('downloader-auth', await files.checkAuth(containerName));
     });
 
     stream.on('error', (err: Error) => {
