@@ -4,7 +4,22 @@ import { type AuthenticatedRequest, generateToken, requireAuth } from '../middle
 
 const router: RouterType = Router();
 
-router.post('/login', async (req, res) => {
+function isSecureConnection(req: AuthenticatedRequest): boolean {
+  // Check X-Forwarded-Proto header (reverse proxy with SSL termination)
+  const forwardedProto = req.headers['x-forwarded-proto'];
+  if (forwardedProto === 'https') return true;
+
+  // Check if request was made over HTTPS directly
+  if (req.secure) return true;
+
+  // Check protocol from host header or origin
+  const origin = req.headers.origin || '';
+  if (origin.startsWith('https://')) return true;
+
+  return false;
+}
+
+router.post('/login', async (req: AuthenticatedRequest, res) => {
   try {
     const { username, password } = req.body as { username?: string; password?: string };
 
@@ -24,11 +39,12 @@ router.post('/login', async (req, res) => {
     }
 
     const token = generateToken(username);
+    const secure = isSecureConnection(req);
 
     res.cookie('token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      secure,
+      sameSite: secure ? 'strict' : 'lax',
       maxAge: 24 * 60 * 60 * 1000
     });
 
