@@ -19,6 +19,7 @@ services:
       DATA_PATH: /opt/hytale-panel/data
       HOST_DATA_PATH: ${HOST_DATA_PATH:-${PWD}/data/panel}
       DISABLE_AUTH: ${DISABLE_AUTH:-false}
+      BASE_PATH: ${BASE_PATH:-}
     volumes:
       - ./panel/backend/src:/app/backend/src
       - ./panel/frontend/src:/app/frontend/src

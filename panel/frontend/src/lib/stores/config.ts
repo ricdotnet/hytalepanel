@@ -14,8 +14,10 @@ export const panelConfig = writable<PanelConfig>({
 
 export async function loadPanelConfig(): Promise<void> {
   try {
-    // Try to get config from the current path or root
-    const paths = ['/panel-config', `${window.location.pathname.replace(/\/$/, '')}/panel-config`];
+    // In dev, Vite proxies /panel-config to backend
+    // In prod, try current path first (for BASE_PATH), then root
+    const currentBase = window.location.pathname.replace(/\/$/, '');
+    const paths = currentBase ? [`${currentBase}/panel-config`, '/panel-config'] : ['/panel-config'];
     
     for (const path of paths) {
       try {
