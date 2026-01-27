@@ -22,6 +22,7 @@ Complete reference of all environment variables.
 | `PANEL_PORT` | `3000` | HTTP server port |
 | `JWT_SECRET` | (random) | Secret key for JWT signing |
 | `MODTALE_API_KEY` | - | API key for Modtale integration |
+| `HOST_DATA_PATH` | - | Host path for direct file access |
 
 ## Docker Variables
 
@@ -113,6 +114,23 @@ When configured, enables:
 - One-click mod installation
 - Update checking
 
+### HOST_DATA_PATH
+
+Path on the host filesystem where panel data should be stored. When set, servers use absolute bind mounts instead of Docker volumes.
+
+```env
+HOST_DATA_PATH=/home/user/hytale-data
+```
+
+When configured:
+- Panel data stored at the host path
+- New servers use absolute paths: `/home/user/hytale-data/servers/{id}/server:/opt/hytale`
+- Files accessible directly from host without using the panel
+
+::: tip Direct File Access
+This is useful when you want to edit server files, upload mods, or manage worlds directly from your host filesystem instead of through the web panel.
+:::
+
 ## Example .env File
 
 ```env
@@ -138,4 +156,10 @@ JWT_SECRET=change-this-to-a-random-string
 # Optional Integrations
 # ===================
 MODTALE_API_KEY=your-api-key
+
+# ===================
+# Data Storage
+# ===================
+# Uncomment to store data on host instead of Docker volume
+# HOST_DATA_PATH=/home/user/hytale-data
 ```

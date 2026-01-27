@@ -86,9 +86,22 @@ Changes are saved to both `servers.json` and the server's `docker-compose.yml`.
 
 > ⚠️ **IMPORTANT: Your world data will be LOST if you don't use volume mounts!**
 
+### Direct Host Access
+
+By default, panel data uses Docker volumes. To access server files directly from your host filesystem:
+
+```bash
+HOST_DATA_PATH=/path/to/data docker compose up -d
+```
+
+When `HOST_DATA_PATH` is set:
+- Panel data is stored at the specified host path
+- New servers use absolute bind mounts instead of relative paths
+- You can browse/edit files directly without using the panel
+
 ### Multi-Server Data
 
-All server data is stored in `./data/panel/`:
+All server data is stored in `./data/panel/` (or `HOST_DATA_PATH` if configured):
 
 ```
 data/panel/
@@ -159,6 +172,7 @@ TZ=America/New_York
 | `PANEL_USER` | `admin` | Panel username |
 | `PANEL_PASS` | `admin` | Panel password |
 | `PANEL_PORT` | `3000` | Panel HTTP port |
+| `HOST_DATA_PATH` | - | Host path for direct file access |
 
 ### RAM Guide
 

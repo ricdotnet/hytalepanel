@@ -22,6 +22,7 @@ Referencia completa de todas las variables de entorno.
 | `PANEL_PORT` | `3000` | Puerto HTTP del servidor |
 | `JWT_SECRET` | (aleatorio) | Clave secreta para firmar JWT |
 | `MODTALE_API_KEY` | - | API key para integración Modtale |
+| `HOST_DATA_PATH` | - | Ruta del host para acceso directo |
 
 ## Variables de Docker
 
@@ -113,6 +114,23 @@ Cuando está configurado, habilita:
 - Instalación de mods con un click
 - Verificación de actualizaciones
 
+### HOST_DATA_PATH
+
+Ruta en el sistema de archivos del host donde se almacenarán los datos del panel. Cuando está configurado, los servidores usan bind mounts absolutos en lugar de volúmenes Docker.
+
+```bash
+HOST_DATA_PATH=/home/user/hytale-data
+```
+
+Cuando está configurado:
+- Los datos del panel se almacenan en la ruta del host
+- Los nuevos servidores usan rutas absolutas: `/home/user/hytale-data/servers/{id}/server:/opt/hytale`
+- Los archivos son accesibles directamente desde el host sin usar el panel
+
+::: tip Acceso Directo a Archivos
+Útil cuando quieres editar archivos del servidor, subir mods o gestionar mundos directamente desde el sistema de archivos del host en lugar del panel web.
+:::
+
 ## Ejemplo de Archivo .env
 
 ```bash
@@ -138,4 +156,10 @@ JWT_SECRET=cambia-esto-a-una-cadena-aleatoria
 # Integraciones Opcionales
 # ===================
 MODTALE_API_KEY=tu-api-key
+
+# ===================
+# Almacenamiento de Datos
+# ===================
+# Descomentar para almacenar datos en el host en lugar de volumen Docker
+# HOST_DATA_PATH=/home/user/hytale-data
 ```
