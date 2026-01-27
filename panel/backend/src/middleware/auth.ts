@@ -32,7 +32,10 @@ function verifyBasicAuth(authHeader: string): JwtPayload | null {
   try {
     const base64 = authHeader.slice(6);
     const decoded = Buffer.from(base64, 'base64').toString('utf-8');
-    const [username, password] = decoded.split(':');
+    const colonIndex = decoded.indexOf(':');
+    if (colonIndex === -1) return null;
+    const username = decoded.slice(0, colonIndex);
+    const password = decoded.slice(colonIndex + 1);
 
     if (username === config.auth.username && password === config.auth.password) {
       return { username, iat: Date.now() };

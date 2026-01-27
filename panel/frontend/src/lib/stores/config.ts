@@ -14,10 +14,14 @@ export const panelConfig = writable<PanelConfig>({
 
 export async function loadPanelConfig(): Promise<void> {
   try {
-    // In dev, Vite proxies /panel-config to backend
-    // In prod, try current path first (for BASE_PATH), then root
-    const currentBase = window.location.pathname.replace(/\/$/, '');
-    const paths = currentBase ? [`${currentBase}/panel-config`, '/panel-config'] : ['/panel-config'];
+    // Build all possible base paths from current URL
+    // e.g., /panel/dashboard -> ['/panel/dashboard', '/panel', '']
+    const segments = window.location.pathname.replace(/\/$/, '').split('/').filter(Boolean);
+    const paths: string[] = [];
+    for (let i = segments.length; i >= 0; i--) {
+      const base = i > 0 ? `/${segments.slice(0, i).join('/')}` : '';
+      paths.push(`${base}/panel-config`);
+    }
 
     for (const path of paths) {
       try {
