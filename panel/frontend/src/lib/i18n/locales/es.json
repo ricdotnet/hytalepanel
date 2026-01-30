@@ -169,5 +169,18 @@
   "docs": "Docs",
   "documentation": "Documentación",
   "issues": "Problemas",
-  "reportIssue": "Reportar Problema"
+  "reportIssue": "Reportar Problema",
+  "modNoDistribution": "Este mod no permite descargas via API. Instálalo manualmente desde CurseForge.",
+  "manualOnly": "Manual",
+  "lastUpdate": "Última actualización",
+  "never": "Nunca",
+  "today": "Hoy",
+  "yesterday": "Ayer",
+  "daysAgo": "Hace {days} días",
+  "checkUpdate": "Verificar",
+  "forceUpdate": "Actualizar",
+  "updateHint": "Descarga los archivos más recientes y reinicia si está corriendo",
+  "confirmUpdate": "Esto descargará los archivos más recientes del servidor. Si está corriendo, se reiniciará. ¿Continuar?",
+  "updateComplete": "¡Servidor actualizado!",
+  "updateFailed": "Actualización fallida"
 }

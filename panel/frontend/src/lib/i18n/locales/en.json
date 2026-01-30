@@ -169,5 +169,18 @@
   "docs": "Docs",
   "documentation": "Documentation",
   "issues": "Issues",
-  "reportIssue": "Report Issue"
+  "reportIssue": "Report Issue",
+  "modNoDistribution": "This mod doesn't allow API downloads. Install manually from CurseForge.",
+  "manualOnly": "Manual",
+  "lastUpdate": "Last update",
+  "never": "Never",
+  "today": "Today",
+  "yesterday": "Yesterday",
+  "daysAgo": "{days} days ago",
+  "checkUpdate": "Check",
+  "forceUpdate": "Update Now",
+  "updateHint": "Downloads latest server files and restarts if running",
+  "confirmUpdate": "This will download the latest server files. If the server is running, it will be restarted. Continue?",
+  "updateComplete": "Server updated successfully!",
+  "updateFailed": "Update failed"
 }
