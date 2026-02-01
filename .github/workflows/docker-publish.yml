@@ -9,6 +9,7 @@ on:
       - "entrypoint.sh"
       - "config.json"
       - "panel/**"
+      - "DOCKERHUB_*.md"
       - ".github/workflows/docker-publish.yml"
   pull_request:
     branches:
@@ -86,6 +87,26 @@ jobs:
             org.opencontainers.image.version=${{ steps.config.outputs.version }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Update Docker Hub description (Server)
+        if: github.event_name != 'pull_request'
+        uses: peter-evans/dockerhub-description@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          repository: ketbom/hytale-server
+          short-description: "Hytale dedicated server with optimized JVM settings"
+          readme-filepath: ./DOCKERHUB_SERVER.md
+
+      - name: Update Docker Hub description (Panel)
+        if: github.event_name != 'pull_request'
+        uses: peter-evans/dockerhub-description@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          repository: ketbom/hytale-panel
+          short-description: "Web panel for managing Hytale dedicated servers"
+          readme-filepath: ./DOCKERHUB_PANEL.md
 
       - name: Delete existing tag and release
         if: github.event_name != 'pull_request'

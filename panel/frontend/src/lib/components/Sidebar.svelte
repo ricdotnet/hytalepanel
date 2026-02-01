@@ -5,11 +5,11 @@
   import SetupTab from './tabs/SetupTab.svelte';
   import FilesTab from './tabs/FilesTab.svelte';
   import ModsTab from './tabs/ModsTab.svelte';
-  import CommandsTab from './tabs/CommandsTab.svelte';
   import ControlTab from './tabs/ControlTab.svelte';
   import ConfigTab from './tabs/ConfigTab.svelte';
+  import BackupsTab from './tabs/BackupsTab.svelte';
 
-  const tabs: TabId[] = ['control', 'setup', 'files', 'mods', 'commands', 'config'];
+  const tabs: TabId[] = ['control', 'setup', 'files', 'mods', 'backups', 'config'];
 
   function setTab(tab: TabId): void {
     activeTab.set(tab);
@@ -50,16 +50,16 @@
       <ModsTab />
     </div>
 
-    <div id="tab-commands" class="tab-content" class:active={$activeTab === 'commands'}>
-      <CommandsTab />
-    </div>
-
     <div id="tab-control" class="tab-content" class:active={$activeTab === 'control'}>
       <ControlTab />
     </div>
 
     <div id="tab-config" class="tab-content" class:active={$activeTab === 'config'}>
       <ConfigTab />
+    </div>
+
+    <div id="tab-backups" class="tab-content" class:active={$activeTab === 'backups'}>
+      <BackupsTab />
     </div>
 
     <div class="sidebar-toolbar">
