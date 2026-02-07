@@ -1,3 +1,4 @@
+# https://www.robotstxt.org/robotstxt.html
 User-agent: *
 Allow: /
 Allow: /guide/
@@ -5,6 +6,13 @@ Allow: /reference/
 Allow: /es/
 Allow: /uk/
 
+# Block admin/API paths if they exist
 Disallow: /api/
+Disallow: /_headers
+Disallow: /*.json$
 
+# Crawl-delay for polite bots
+Crawl-delay: 1
+
+# Sitemap
 Sitemap: https://hytalepanel.ketbome.com/sitemap.xml

@@ -1,3 +1,62 @@
+---
+head:
+  - - meta
+    - name: description
+      content: Troubleshooting guide for HytalePanel. Solutions for encrypted authentication, ARM64 issues, server startup problems, and container configuration.
+  - - meta
+    - name: keywords
+      content: hytale troubleshooting, fix server issues, docker problems, casaos hytale, arm64 server, authentication errors
+  - - script
+    - type: application/ld+json
+    - |
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "How do I fix encrypted authentication on ZimaOS/CasaOS?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Use the docker-compose.casaos.yml file instead of the regular one. Download it with: curl -O https://raw.githubusercontent.com/ketbome/hytalepanel/main/docker-compose.casaos.yml. Then start with: docker compose -f docker-compose.casaos.yml up -d. This file generates and persists the machine-id automatically."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Why does my server show 'Waiting for files...'?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "The server needs HytaleServer.jar and Assets.zip. Enable auto-download by setting AUTO_DOWNLOAD=true in .env (x64 only), or manually download from hytale.com and place them in ./server/ folder."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does HytalePanel work on ARM64 devices?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes, but auto-download is x64 only. For ARM64 (Apple Silicon, Raspberry Pi), you must manually download HytaleServer.jar and Assets.zip files and place them in the server folder."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Why is my container restarting repeatedly?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Common causes: insufficient RAM (check JAVA_XMX in .env), missing server files (HytaleServer.jar and Assets.zip), or port conflicts (5520/UDP). Check logs with: docker compose logs -f hytale"
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How do I fix 'Container not found' errors in the panel?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Verify the container name matches CONTAINER_NAME in .env, ensure Docker socket is mounted (/var/run/docker.sock), and check that containers are on the same Docker network with: docker network inspect hytale_default"
+            }
+          }
+        ]
+      }
+---
+
 # Troubleshooting
 
 Common issues and solutions.
@@ -25,6 +84,7 @@ docker compose -f docker-compose.casaos.yml up -d
 ```
 
 The container will:
+
 1. Generate a unique machine-id on first start
 2. Save it to `./server/.machine-id`
 3. Restore it automatically on every restart
@@ -124,14 +184,16 @@ The web panel shows "Container not found" or can't control the server.
 ### Solution
 
 1. Verify container name matches:
+
    ```bash
    # Check actual container name
    docker ps
-   
+
    # Should match CONTAINER_NAME in .env (default: hytale-server)
    ```
 
 2. Ensure Docker socket is mounted:
+
    ```yaml
    # In docker-compose.yml
    volumes:
@@ -168,6 +230,7 @@ Installed mods don't appear in-game.
 ### Solution
 
 1. Verify `SERVER_EXTRA_ARGS` includes mods flag:
+
    ```bash
    SERVER_EXTRA_ARGS=--mods mods
    ```

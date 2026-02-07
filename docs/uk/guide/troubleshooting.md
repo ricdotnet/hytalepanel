@@ -1,3 +1,63 @@
+---
+head:
+  - - meta
+    - name: description
+      content: Посібник з усунення несправностей HytalePanel. Рішення для зашифрованої автентифікації, проблем ARM64, помилок запуску сервера та налаштування контейнерів.
+  - - meta
+    - name: keywords
+      content: усунення несправностей hytale, виправити сервер, проблеми docker, casaos hytale, сервер arm64, помилки автентифікації
+  - - script
+    - type: application/ld+json
+    - |
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "inLanguage": "uk-UA",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Як виправити зашифровану автентифікацію на ZimaOS/CasaOS?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Використовуйте файл docker-compose.casaos.yml замість звичайного. Завантажте його командою: curl -O https://raw.githubusercontent.com/ketbome/hytalepanel/main/docker-compose.casaos.yml. Потім запустіть: docker compose -f docker-compose.casaos.yml up -d. Цей файл генерує та зберігає machine-id автоматично."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Чому мій сервер показує 'Очікування файлів...'?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Серверу потрібні HytaleServer.jar та Assets.zip. Увімкніть автозавантаження встановивши AUTO_DOWNLOAD=true в .env (лише x64), або завантажте вручну з hytale.com та розмістіть у папці ./server/"
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Чи працює HytalePanel на пристроях ARM64?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Так, але автозавантаження доступне лише для x64. Для ARM64 (Apple Silicon, Raspberry Pi) необхідно вручну завантажити файли HytaleServer.jar та Assets.zip і розмістити їх у папці сервера."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Чому мій контейнер постійно перезапускається?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Основні причини: недостатньо RAM (перевірте JAVA_XMX в .env), відсутні файли сервера (HytaleServer.jar та Assets.zip), або конфлікт портів (5520/UDP). Перевірте логи командою: docker compose logs -f hytale"
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Як виправити помилки 'Контейнер не знайдено' в панелі?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Переконайтеся, що назва контейнера збігається з CONTAINER_NAME в .env, перевірте що Docker socket змонтований (/var/run/docker.sock), та що контейнери в одній Docker мережі командою: docker network inspect hytale_default"
+            }
+          }
+        ]
+      }
+---
+
 # Усунення несправностей
 
 Поширені проблеми та їх вирішення.
@@ -25,6 +85,7 @@ docker compose -f docker-compose.casaos.yml up -d
 ```
 
 Контейнер:
+
 1. Згенерує унікальний machine-id при першому запуску
 2. Збереже його в `./server/.machine-id`
 3. Автоматично відновить при кожному перезапуску
@@ -124,14 +185,16 @@ docker ps -a
 ### Рішення
 
 1. Перевірте що назва контейнера співпадає:
+
    ```bash
    # Перевірити фактичну назву контейнера
    docker ps
-   
+
    # Має співпадати з CONTAINER_NAME в .env (за замовчуванням: hytale-server)
    ```
 
 2. Переконайтеся що Docker socket змонтовано:
+
    ```yaml
    # В docker-compose.yml
    volumes:
@@ -168,6 +231,7 @@ sudo chown -R 1000:1000 ./server/
 ### Рішення
 
 1. Перевірте що `SERVER_EXTRA_ARGS` включає флаг модів:
+
    ```bash
    SERVER_EXTRA_ARGS=--mods mods
    ```

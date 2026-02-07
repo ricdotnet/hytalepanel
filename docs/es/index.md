@@ -4,10 +4,10 @@ layout: home
 head:
   - - meta
     - name: description
-      content: Imagen Docker para servidor dedicado de Hytale con panel web, descarga automática, autenticación JWT y soporte de mods.
+      content: Imagen Docker para servidor dedicado de Hytale con panel web de administración, autenticación JWT, consola en tiempo real, gestor de archivos y soporte completo de mods.
   - - meta
     - name: keywords
-      content: hytale servidor, docker, servidor dedicado, panel web, mods
+      content: hytale servidor, docker, servidor dedicado, panel web, mods, autenticación jwt, gestor archivos, consola tiempo real
 
 hero:
   name: HytalePanel

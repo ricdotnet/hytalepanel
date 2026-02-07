@@ -1,3 +1,91 @@
+---
+head:
+  - - meta
+    - name: description
+      content: Guía completa de instalación para HytalePanel. Aprende a configurar servidores dedicados de Hytale con Docker y panel web en minutos.
+  - - meta
+    - name: keywords
+      content: instalación hytale, configurar docker, tutorial servidor juego, instalar panel hytale, configuración servidor
+  - - script
+    - type: application/ld+json
+    - |
+      {
+        "@context": "https://schema.org",
+        "@type": "HowTo",
+        "name": "Cómo instalar HytalePanel",
+        "description": "Guía paso a paso para instalar y configurar el contenedor Docker de HytalePanel con interfaz web de administración",
+        "inLanguage": "es-ES",
+        "totalTime": "PT10M",
+        "step": [
+          {
+            "@type": "HowToStep",
+            "name": "Crear carpeta del proyecto",
+            "text": "Crea un directorio para tu servidor Hytale",
+            "itemListElement": {
+              "@type": "HowToDirection",
+              "text": "mkdir hytale && cd hytale"
+            }
+          },
+          {
+            "@type": "HowToStep",
+            "name": "Descargar archivos de configuración",
+            "text": "Descarga docker-compose.yml y .env.example del repositorio",
+            "itemListElement": {
+              "@type": "HowToDirection",
+              "text": "curl -O https://raw.githubusercontent.com/ketbome/hytalepanel/main/docker-compose.yml && curl -O https://raw.githubusercontent.com/ketbome/hytalepanel/main/.env.example"
+            }
+          },
+          {
+            "@type": "HowToStep",
+            "name": "Configurar entorno",
+            "text": "Copia .env.example a .env y establece tus credenciales",
+            "itemListElement": {
+              "@type": "HowToDirection",
+              "text": "cp .env.example .env && edita .env para cambiar PANEL_USER y PANEL_PASS"
+            }
+          },
+          {
+            "@type": "HowToStep",
+            "name": "Iniciar el panel",
+            "text": "Lanza los contenedores Docker",
+            "itemListElement": {
+              "@type": "HowToDirection",
+              "text": "docker compose up -d"
+            }
+          },
+          {
+            "@type": "HowToStep",
+            "name": "Acceder al panel",
+            "text": "Abre http://localhost:3000 en tu navegador e inicia sesión",
+            "itemListElement": {
+              "@type": "HowToDirection",
+              "text": "Navega a http://localhost:3000 y usa tus credenciales configuradas"
+            }
+          }
+        ],
+        "tool": [
+          {
+            "@type": "HowToTool",
+            "name": "Docker"
+          },
+          {
+            "@type": "HowToTool",
+            "name": "Docker Compose"
+          }
+        ],
+        "supply": [
+          {
+            "@type": "HowToSupply",
+            "name": "4GB+ RAM"
+          },
+          {
+            "@type": "HowToSupply",
+            "name": "Puerto 3000/TCP abierto"
+          }
+        ]
+      }
+---
+
 # Comenzar
 
 ## Requisitos
@@ -55,6 +143,7 @@ docker compose up -d
 Abre [http://localhost:3000](http://localhost:3000) en tu navegador.
 
 Credenciales por defecto:
+
 - **Usuario**: `admin`
 - **Contraseña**: `admin`
 
@@ -75,6 +164,7 @@ Credenciales por defecto:
 ## Configuración Multi-Servidor
 
 Puedes crear múltiples servidores, cada uno con:
+
 - Diferentes puertos (5520, 5521, 5522, ...)
 - Diferentes asignaciones de RAM
 - Configuraciones de mods separadas
@@ -84,8 +174,8 @@ Puedes crear múltiples servidores, cada uno con:
 
 Cada servidor necesita un puerto UDP único. El panel asigna automáticamente puertos comenzando desde 5520.
 
-| Servidor | Puerto |
-|----------|--------|
+| Servidor   | Puerto   |
+| ---------- | -------- |
 | Servidor 1 | 5520/UDP |
 | Servidor 2 | 5521/UDP |
 | Servidor 3 | 5522/UDP |
@@ -132,12 +222,12 @@ New-NetFirewallRule -DisplayName "Hytale Game" -Direction Inbound -Protocol UDP 
 
 ## Resumen de Puertos
 
-| Servicio | Puerto | Protocolo |
-|----------|--------|-----------|
-| Panel Web | 3000 | TCP |
-| Servidor 1 | 5520 | UDP |
-| Servidor 2 | 5521 | UDP |
-| ... | ... | UDP |
+| Servicio   | Puerto | Protocolo |
+| ---------- | ------ | --------- |
+| Panel Web  | 3000   | TCP       |
+| Servidor 1 | 5520   | UDP       |
+| Servidor 2 | 5521   | UDP       |
+| ...        | ...    | UDP       |
 
 ## Siguientes Pasos
 

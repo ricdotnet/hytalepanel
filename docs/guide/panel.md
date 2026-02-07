@@ -2,7 +2,7 @@
 
 The web panel provides a complete interface to manage multiple Hytale servers from a single dashboard.
 
-![Panel Preview](/images/panel.png)
+![HytalePanel dashboard showing server list with real-time status, resource usage, and control buttons](/images/panel.png)
 
 ## URLs and Navigation
 

@@ -1,3 +1,91 @@
+---
+head:
+  - - meta
+    - name: description
+      content: Повний посібник зі встановлення HytalePanel. Навчіться налаштовувати виділені сервери Hytale з Docker та веб-панеллю за хвилини.
+  - - meta
+    - name: keywords
+      content: встановлення hytale, налаштування docker, туторіал сервера, встановити панель hytale, конфігурація сервера
+  - - script
+    - type: application/ld+json
+    - |
+      {
+        "@context": "https://schema.org",
+        "@type": "HowTo",
+        "name": "Як встановити HytalePanel",
+        "description": "Покроковий посібник зі встановлення та налаштування Docker контейнера HytalePanel з веб-інтерфейсом адміністрування",
+        "inLanguage": "uk-UA",
+        "totalTime": "PT10M",
+        "step": [
+          {
+            "@type": "HowToStep",
+            "name": "Створити папку проєкту",
+            "text": "Створіть директорію для вашого сервера Hytale",
+            "itemListElement": {
+              "@type": "HowToDirection",
+              "text": "mkdir hytale && cd hytale"
+            }
+          },
+          {
+            "@type": "HowToStep",
+            "name": "Завантажити конфігураційні файли",
+            "text": "Завантажте docker-compose.yml та .env.example з репозиторію",
+            "itemListElement": {
+              "@type": "HowToDirection",
+              "text": "curl -O https://raw.githubusercontent.com/ketbome/hytalepanel/main/docker-compose.yml && curl -O https://raw.githubusercontent.com/ketbome/hytalepanel/main/.env.example"
+            }
+          },
+          {
+            "@type": "HowToStep",
+            "name": "Налаштувати середовище",
+            "text": "Скопіюйте .env.example в .env та встановіть ваші облікові дані",
+            "itemListElement": {
+              "@type": "HowToDirection",
+              "text": "cp .env.example .env && відредагуйте .env для зміни PANEL_USER та PANEL_PASS"
+            }
+          },
+          {
+            "@type": "HowToStep",
+            "name": "Запустити панель",
+            "text": "Запустіть Docker контейнери",
+            "itemListElement": {
+              "@type": "HowToDirection",
+              "text": "docker compose up -d"
+            }
+          },
+          {
+            "@type": "HowToStep",
+            "name": "Доступ до панелі",
+            "text": "Відкрийте http://localhost:3000 у браузері та увійдіть",
+            "itemListElement": {
+              "@type": "HowToDirection",
+              "text": "Перейдіть до http://localhost:3000 та використайте налаштовані облікові дані"
+            }
+          }
+        ],
+        "tool": [
+          {
+            "@type": "HowToTool",
+            "name": "Docker"
+          },
+          {
+            "@type": "HowToTool",
+            "name": "Docker Compose"
+          }
+        ],
+        "supply": [
+          {
+            "@type": "HowToSupply",
+            "name": "4ГБ+ RAM"
+          },
+          {
+            "@type": "HowToSupply",
+            "name": "Відкритий порт 3000/TCP"
+          }
+        ]
+      }
+---
+
 # Початок роботи
 
 ## Вимоги
@@ -55,6 +143,7 @@ docker compose up -d
 Відкрийте [http://localhost:3000](http://localhost:3000) у браузері.
 
 Стандартні облікові дані:
+
 - **Користувач**: `admin`
 - **Пароль**: `admin`
 
@@ -75,6 +164,7 @@ docker compose up -d
 ## Налаштування кількох серверів
 
 Ви можете створити кілька серверів, кожен з:
+
 - Різними портами (5520, 5521, 5522, ...)
 - Різним розподілом RAM
 - Окремими налаштуваннями модів
@@ -84,8 +174,8 @@ docker compose up -d
 
 Кожен сервер потребує унікальний UDP порт. Панель автоматично призначає порти починаючи з 5520.
 
-| Сервер | Порт |
-|--------|------|
+| Сервер   | Порт     |
+| -------- | -------- |
 | Сервер 1 | 5520/UDP |
 | Сервер 2 | 5521/UDP |
 | Сервер 3 | 5522/UDP |
@@ -132,12 +222,12 @@ New-NetFirewallRule -DisplayName "Hytale Game" -Direction Inbound -Protocol UDP 
 
 ## Підсумок портів
 
-| Сервіс | Порт | Протокол |
-|--------|------|----------|
-| Веб панель | 3000 | TCP |
-| Сервер 1 | 5520 | UDP |
-| Сервер 2 | 5521 | UDP |
-| ... | ... | UDP |
+| Сервіс     | Порт | Протокол |
+| ---------- | ---- | -------- |
+| Веб панель | 3000 | TCP      |
+| Сервер 1   | 5520 | UDP      |
+| Сервер 2   | 5521 | UDP      |
+| ...        | ...  | UDP      |
 
 ## Наступні кроки
 

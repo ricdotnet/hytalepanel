@@ -4,10 +4,10 @@ layout: home
 head:
   - - meta
     - name: description
-      content: Docker image for Hytale dedicated server with web admin panel, auto-download, JWT authentication, and mod support.
+      content: Docker image for Hytale dedicated server with web admin panel, JWT authentication, real-time console, file manager, and mod support via Modtale and CurseForge.
   - - meta
     - name: keywords
-      content: hytale server, docker, dedicated server, game server, web panel, mods
+      content: hytale server, docker, dedicated server, game server, web panel, mods, jwt authentication, file manager, real-time console
 
 hero:
   name: HytalePanel

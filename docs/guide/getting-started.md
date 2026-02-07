@@ -1,3 +1,90 @@
+---
+head:
+  - - meta
+    - name: description
+      content: Complete installation guide for HytalePanel. Learn how to set up Docker-based Hytale dedicated servers with web panel in minutes.
+  - - meta
+    - name: keywords
+      content: hytale installation, docker setup, game server tutorial, hytale panel install, server configuration
+  - - script
+    - type: application/ld+json
+    - |
+      {
+        "@context": "https://schema.org",
+        "@type": "HowTo",
+        "name": "How to Install HytalePanel",
+        "description": "Step-by-step guide to install and configure HytalePanel Docker container with web admin interface",
+        "totalTime": "PT10M",
+        "step": [
+          {
+            "@type": "HowToStep",
+            "name": "Create project folder",
+            "text": "Create a directory for your Hytale server",
+            "itemListElement": {
+              "@type": "HowToDirection",
+              "text": "mkdir hytale && cd hytale"
+            }
+          },
+          {
+            "@type": "HowToStep",
+            "name": "Download configuration files",
+            "text": "Download docker-compose.yml and .env.example from the repository",
+            "itemListElement": {
+              "@type": "HowToDirection",
+              "text": "curl -O https://raw.githubusercontent.com/ketbome/hytalepanel/main/docker-compose.yml && curl -O https://raw.githubusercontent.com/ketbome/hytalepanel/main/.env.example"
+            }
+          },
+          {
+            "@type": "HowToStep",
+            "name": "Configure environment",
+            "text": "Copy .env.example to .env and set your credentials",
+            "itemListElement": {
+              "@type": "HowToDirection",
+              "text": "cp .env.example .env && edit .env to change PANEL_USER and PANEL_PASS"
+            }
+          },
+          {
+            "@type": "HowToStep",
+            "name": "Start the panel",
+            "text": "Launch the Docker containers",
+            "itemListElement": {
+              "@type": "HowToDirection",
+              "text": "docker compose up -d"
+            }
+          },
+          {
+            "@type": "HowToStep",
+            "name": "Access the panel",
+            "text": "Open http://localhost:3000 in your browser and log in",
+            "itemListElement": {
+              "@type": "HowToDirection",
+              "text": "Navigate to http://localhost:3000 and use your configured credentials"
+            }
+          }
+        ],
+        "tool": [
+          {
+            "@type": "HowToTool",
+            "name": "Docker"
+          },
+          {
+            "@type": "HowToTool",
+            "name": "Docker Compose"
+          }
+        ],
+        "supply": [
+          {
+            "@type": "HowToSupply",
+            "name": "4GB+ RAM"
+          },
+          {
+            "@type": "HowToSupply",
+            "name": "Open port 3000/TCP"
+          }
+        ]
+      }
+---
+
 # Getting Started
 
 ## Prerequisites
@@ -55,6 +142,7 @@ docker compose up -d
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 Default credentials:
+
 - **User**: `admin`
 - **Pass**: `admin`
 
@@ -75,6 +163,7 @@ Your server is now running!
 ## Multi-Server Setup
 
 You can create multiple servers, each with:
+
 - Different ports (5520, 5521, 5522, ...)
 - Different RAM allocations
 - Separate mod configurations
@@ -84,8 +173,8 @@ You can create multiple servers, each with:
 
 Each server needs a unique UDP port. The panel auto-assigns ports starting from 5520.
 
-| Server | Port |
-|--------|------|
+| Server   | Port     |
+| -------- | -------- |
 | Server 1 | 5520/UDP |
 | Server 2 | 5521/UDP |
 | Server 3 | 5522/UDP |
@@ -132,12 +221,12 @@ New-NetFirewallRule -DisplayName "Hytale Game" -Direction Inbound -Protocol UDP 
 
 ## Ports Summary
 
-| Service | Port | Protocol |
-|---------|------|----------|
-| Web Panel | 3000 | TCP |
-| Game Server 1 | 5520 | UDP |
-| Game Server 2 | 5521 | UDP |
-| ... | ... | UDP |
+| Service       | Port | Protocol |
+| ------------- | ---- | -------- |
+| Web Panel     | 3000 | TCP      |
+| Game Server 1 | 5520 | UDP      |
+| Game Server 2 | 5521 | UDP      |
+| ...           | ...  | UDP      |
 
 ## Next Steps
 
