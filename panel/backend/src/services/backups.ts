@@ -1,12 +1,13 @@
-import { createWriteStream } from 'node:fs';
-import fs from 'node:fs/promises';
-import path from 'node:path';
-import archiver from 'archiver';
-import Extract from 'extract-zip';
-import config from '../config/index.js';
+import { createWriteStream } from "node:fs";
+import fs from "node:fs/promises";
+import path from "node:path";
+import archiver from "archiver";
+import Extract from "extract-zip";
+import config from "../config/index.js";
 
-const DATA_PATH = config.data.path;
-const SERVERS_DIR = path.join(DATA_PATH, 'servers');
+// Dynamic path functions for testability
+const getDataPath = () => config.data.path;
+const getServersDir = () => path.join(getDataPath(), "servers");
 
 export interface BackupConfig {
   enabled: boolean;
@@ -21,7 +22,7 @@ export const DEFAULT_BACKUP_CONFIG: BackupConfig = {
   intervalMinutes: 60,
   maxBackups: 10,
   maxAgeDays: 7,
-  onServerStart: true
+  onServerStart: true,
 };
 
 export interface BackupInfo {
@@ -52,26 +53,34 @@ export interface OperationResult {
 const activeSchedulers = new Map<string, NodeJS.Timeout>();
 
 function getBackupsDir(serverId: string): string {
-  return path.join(SERVERS_DIR, serverId, 'backups');
+  return path.join(getServersDir(), serverId, "backups");
 }
 
 function getServerDataDir(serverId: string): string {
-  return path.join(SERVERS_DIR, serverId, 'server');
+  return path.join(getServersDir(), serverId, "server");
 }
 
 function generateBackupFilename(): string {
   const now = new Date();
-  const timestamp = now.toISOString().replace(/[:.]/g, '-').slice(0, 19);
+  const timestamp = now.toISOString().replaceAll(/[:.]/g, "-").slice(0, 19);
   return `backup-${timestamp}.zip`;
 }
 
-function parseBackupFilename(filename: string): { id: string; createdAt: string } | null {
-  const match = filename.match(/^backup-(\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2})\.zip$/);
+function parseBackupFilename(
+  filename: string,
+): { id: string; createdAt: string } | null {
+  const match = filename.match(
+    /^backup-(\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2})\.zip$/,
+  );
   if (!match) return null;
-  const timestamp = match[1].replace(/-/g, (m, i) => (i > 9 ? ':' : '-')).replace('T', 'T');
+  const timestamp = match[1]
+    .replaceAll("-", (_m, i) => (i > 9 ? ":" : "-"))
+    .replace("T", "T");
   return {
     id: match[1],
-    createdAt: new Date(timestamp.replace(/-/g, (m, i) => (i > 9 ? ':' : m))).toISOString()
+    createdAt: new Date(
+      timestamp.replaceAll("-", (_m, i) => (i > 9 ? ":" : _m)),
+    ).toISOString(),
   };
 }
 
@@ -87,7 +96,7 @@ export async function createBackup(serverId: string): Promise<BackupResult> {
     try {
       await fs.access(serverDir);
     } catch {
-      return { success: false, error: 'Server data directory not found' };
+      return { success: false, error: "Server data directory not found" };
     }
 
     const filename = generateBackupFilename();
@@ -96,25 +105,25 @@ export async function createBackup(serverId: string): Promise<BackupResult> {
     // Create ZIP archive
     await new Promise<void>((resolve, reject) => {
       const output = createWriteStream(backupPath);
-      const archive = archiver('zip', { zlib: { level: 6 } });
+      const archive = archiver("zip", { zlib: { level: 6 } });
 
-      output.on('close', () => resolve());
-      archive.on('error', (err) => reject(err));
+      output.on("close", () => resolve());
+      archive.on("error", (err) => reject(err));
 
       archive.pipe(output);
 
       // Add folders to backup: universe, config, mods, logs
-      const foldersToBackup = ['universe', 'config', 'mods', 'logs'];
+      const foldersToBackup = ["universe", "config", "mods", "logs"];
       for (const folder of foldersToBackup) {
         const folderPath = path.join(serverDir, folder);
         archive.directory(folderPath, folder);
       }
 
       // Also backup root config files
-      archive.glob('*.json', { cwd: serverDir });
-      archive.glob('*.yaml', { cwd: serverDir });
-      archive.glob('*.yml', { cwd: serverDir });
-      archive.glob('*.properties', { cwd: serverDir });
+      archive.glob("*.json", { cwd: serverDir });
+      archive.glob("*.yaml", { cwd: serverDir });
+      archive.glob("*.yml", { cwd: serverDir });
+      archive.glob("*.properties", { cwd: serverDir });
 
       archive.finalize();
     });
@@ -127,7 +136,7 @@ export async function createBackup(serverId: string): Promise<BackupResult> {
       id: parsed?.id || filename,
       filename,
       createdAt: new Date().toISOString(),
-      size: stats.size
+      size: stats.size,
     };
 
     return { success: true, backup };
@@ -151,7 +160,7 @@ export async function listBackups(serverId: string): Promise<BackupListResult> {
     const backups: BackupInfo[] = [];
 
     for (const file of files) {
-      if (!file.endsWith('.zip')) continue;
+      if (!file.endsWith(".zip")) continue;
 
       const filePath = path.join(backupsDir, file);
       const stats = await fs.stat(filePath);
@@ -162,13 +171,16 @@ export async function listBackups(serverId: string): Promise<BackupListResult> {
           id: parsed.id,
           filename: file,
           createdAt: parsed.createdAt,
-          size: stats.size
+          size: stats.size,
         });
       }
     }
 
     // Sort by date, newest first
-    backups.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    backups.sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    );
 
     return { success: true, backups };
   } catch (e) {
@@ -176,7 +188,10 @@ export async function listBackups(serverId: string): Promise<BackupListResult> {
   }
 }
 
-export async function restoreBackup(serverId: string, backupId: string): Promise<OperationResult> {
+export async function restoreBackup(
+  serverId: string,
+  backupId: string,
+): Promise<OperationResult> {
   try {
     const backupsDir = getBackupsDir(serverId);
     const serverDir = getServerDataDir(serverId);
@@ -188,11 +203,11 @@ export async function restoreBackup(serverId: string, backupId: string): Promise
     try {
       await fs.access(backupPath);
     } catch {
-      return { success: false, error: 'Backup not found' };
+      return { success: false, error: "Backup not found" };
     }
 
     // Clear existing data folders (but keep jar and assets)
-    const foldersToRestore = ['universe', 'config', 'mods', 'logs'];
+    const foldersToRestore = ["universe", "config", "mods", "logs"];
     for (const folder of foldersToRestore) {
       const folderPath = path.join(serverDir, folder);
       try {
@@ -211,7 +226,10 @@ export async function restoreBackup(serverId: string, backupId: string): Promise
   }
 }
 
-export async function deleteBackup(serverId: string, backupId: string): Promise<OperationResult> {
+export async function deleteBackup(
+  serverId: string,
+  backupId: string,
+): Promise<OperationResult> {
   try {
     const backupsDir = getBackupsDir(serverId);
     const filename = `backup-${backupId}.zip`;
@@ -225,7 +243,10 @@ export async function deleteBackup(serverId: string, backupId: string): Promise<
   }
 }
 
-export async function cleanupOldBackups(serverId: string, backupConfig: BackupConfig): Promise<void> {
+export async function cleanupOldBackups(
+  serverId: string,
+  backupConfig: BackupConfig,
+): Promise<void> {
   try {
     const result = await listBackups(serverId);
     if (!result.success || result.backups.length === 0) return;
@@ -258,11 +279,17 @@ export async function cleanupOldBackups(serverId: string, backupConfig: BackupCo
       await deleteBackup(serverId, backup.id);
     }
   } catch (e) {
-    console.error(`[Backups] Cleanup error for ${serverId}:`, (e as Error).message);
+    console.error(
+      `[Backups] Cleanup error for ${serverId}:`,
+      (e as Error).message,
+    );
   }
 }
 
-export function startBackupScheduler(serverId: string, backupConfig: BackupConfig): void {
+export function startBackupScheduler(
+  serverId: string,
+  backupConfig: BackupConfig,
+): void {
   // Stop existing scheduler if any
   stopBackupScheduler(serverId);
 
@@ -276,7 +303,9 @@ export function startBackupScheduler(serverId: string, backupConfig: BackupConfi
     console.log(`[Backups] Creating scheduled backup for ${serverId}`);
     const result = await createBackup(serverId);
     if (result.success) {
-      console.log(`[Backups] Scheduled backup created: ${result.backup?.filename}`);
+      console.log(
+        `[Backups] Scheduled backup created: ${result.backup?.filename}`,
+      );
       await cleanupOldBackups(serverId, backupConfig);
     } else {
       console.error(`[Backups] Scheduled backup failed: ${result.error}`);
@@ -284,7 +313,9 @@ export function startBackupScheduler(serverId: string, backupConfig: BackupConfi
   }, intervalMs);
 
   activeSchedulers.set(serverId, timer);
-  console.log(`[Backups] Scheduler started for ${serverId}, interval: ${backupConfig.intervalMinutes}min`);
+  console.log(
+    `[Backups] Scheduler started for ${serverId}, interval: ${backupConfig.intervalMinutes}min`,
+  );
 }
 
 export function stopBackupScheduler(serverId: string): void {

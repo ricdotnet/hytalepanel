@@ -7,3 +7,12 @@ pnpm lint:fix
 
 # Stage any auto-fixed files
 git add -u
+
+# Verify lint passes after fixes (fails if there are errors that can't be auto-fixed)
+echo "Verifying lint..."
+pnpm lint || {
+  echo "❌ Lint errors found that cannot be auto-fixed. Please fix manually."
+  exit 1
+}
+
+echo "✅ Pre-commit checks passed!"
